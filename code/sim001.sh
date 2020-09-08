@@ -3,5 +3,5 @@
 #SBATCH -e slurm.err 
 #SBATCH -–mem=32G
 #SBATCH –p herringlab
-module load R/3.6.0
-R CMD BATCH sim_long.R
+module load R/x86_64-pc-linux-gnu-library/3.6
+R CMD BATCH sim001.R
