@@ -170,7 +170,6 @@ for (t in 1:Ty) {
 
 
 #' ### Running my sampler
-
 data <- list(
   X=X, Y=Y, 
   ty=ty, idy=idy,
