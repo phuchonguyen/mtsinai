@@ -1,0 +1,11 @@
+*.pdf
+sim_factor.*
+plot_chem.r
+*.Rproj
+*.Rproj.user/
+*.Rhistory
+NHANES/*
+notes/*
+reading/*
+reports/*
+codebook/*
