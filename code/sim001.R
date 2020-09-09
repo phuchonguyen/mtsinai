@@ -89,7 +89,7 @@ plot_truth <- function(kappa, tau, Tx, L, K) {
   }
 }
 
-plot_truth(kappa=10, tau=1, Tx=10, L=3, K=2)
+plot_truth(kappa=100, tau=1, Tx=10, L=3, K=2)
 
 #' # Simulate data from Gaussian Process in mean and variance for X
 #' $$X_{it} = \Lambda(t)\eta_{it}$$
@@ -106,7 +106,7 @@ K <- 2
 L <- 3
 Tx <- 10
 M <- 50     # Number of subjects
-KAPPA <- 10 # GP bandwidth
+KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
 TAU <- 1    # GP sqrt variance
 SIGMA_X0 <- diag(1, P, P)  # Error variance of X
@@ -149,8 +149,8 @@ lattice::levelplot(cor(X))
 #' $$y = \beta \eta + \eta^T \Delta \eta$$
 
 # Each row i is set of coefs for Ty=i for all factors at all time Tx
-GAMMA <- purrr::rbernoulli(K*Tx, p=0.3)
-BETA0 <- rnorm(K*Tx) * GAMMA
+GAMMA <- purrr::rbernoulli(K*Tx, p=0.3)*1
+BETA0 <- rnorm(K*Tx, 10, 1) * GAMMA
 SIGMA_B <- rgamma(K*Tx, 1, 1)
 BETA <- array(NA, dim = c(Ty, K*Tx))
 BETA[1,] <- rnorm(K*Tx, mean = BETA0, sd = SIGMA_B) * GAMMA
@@ -167,7 +167,22 @@ Y <- rep(NA, Ty*M)
 for (t in 1:Ty) {
   Y[((t-1)*M + 1) : (t*M)] <- etay%*%BETA[t,] + rnorm(M, 0, SIGMA_Y[t])
 }
+par(mfrow=c(3,3))
+plot(etay[,1], Y[1:M], col=GAMMA[1]+1, cex=1)
+plot(etay[,3], Y[1:M], col=GAMMA[3]+1, cex=1)
+plot(etay[,5], Y[1:M], col=GAMMA[5]+1, cex=1)
+plot(etay[,2], Y[1:M], col=GAMMA[2]+1, cex=1)
+plot(etay[,9], Y[1:M], col=GAMMA[9]+1, cex=1)
+plot(etay[,20], Y[1:M], col=GAMMA[20]+1, cex=1)
+plot(etay[,2], Y[(1+M):(2*M)], col=GAMMA[2]+1, cex=1)
+plot(etay[,9], Y[(1+M):(2*M)], col=GAMMA[9]+1, cex=1)
+plot(etay[,20], Y[(1+M):(2*M)], col=GAMMA[20]+1, cex=1)
 
+par(mfrow=c(1,2))
+plot(1:Ty, BETA[,1])
+abline(h=BETA0[1], col="red")
+plot(1:Ty, BETA[,2])
+abline(h=BETA0[2], col="red")
 
 #' ### Running my sampler
 data <- list(
@@ -181,6 +196,8 @@ data <- list(
 niter=10000
 nburn=5000
 nthin=5
-samples1 <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(truemu, trueSigma, KAPPA, TAU, Tx, Ty, X, Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, "samples/lintruth_001.RData")
-save(samples1, "samples/linsamples_001.RData")
+samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
+save(niter, truemu, trueSigma, KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
+     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0, file="code/samples/lintruth_003.RData")
+saveRDS(samples, file="code/samples/linsamples_003.RDS")
+

@@ -4,7 +4,7 @@ to_etai_reg <- function(etai_fac) {
   return(as.vector(t(etai_fac)))
 }
 
-# TODO: Fix the multivariate case: not (x-x')T(x-x') but sum(x-x')^2
+
 # Generate covariance matrix for Squared Exponential kernel
 # c(x, x') = sigma^2 exp(-kappa||x-x'||^2_2)4
 # Add a perturbation to make positive definite
@@ -17,11 +17,11 @@ se_cov <- function(x, sigma, kappa) {
   if (p==1) {
     x <- as.vector(x)
     perturb <- diag(rep(1e-10, length(x)))
-    return(outer(x, x, function(a, b) sigma^2*exp(-kappa*(a-b)^2)) + perturb)
+    return(outer(x, x, function(a, b) sigma^2*exp(-1/kappa*(a-b)^2)) + perturb)
   }
   perturb <- diag(rep(1e-10, nrow(x)))
   if (length(kappa) < p) kappa <- rep(kappa, ncol(x))
-  x <- sweep(x, 2, sqrt(kappa), "*")
+  x <- sweep(x, 2, sqrt(1/kappa), "*")
   K <- sigma^2*fields::Exp.cov(x, theta=1, p=2) # p=2 is Squared Exponential Function
   return(K + perturb)
 }
