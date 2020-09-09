@@ -56,7 +56,8 @@ mu_sine <- function(v, args=NULL) {
 }
 
 # Plotting true functions 
-plot_truth <- function(kappa, tau, Tx, L, K) {
+plot_truth <- function(kappa, tau, Tx, L, K, P) {
+  Theta <- array(rnorm(P*L, 0, 1), dim = c(P, L))
   truepsi <- cbind(rgp(1, 1:Tx, mu_zero, kappa, tau),
                    rgp(1, 1:Tx, mu_zero, kappa, tau))
   truexi <- array(NA, dim = c(Tx, L, K))
@@ -70,7 +71,7 @@ plot_truth <- function(kappa, tau, Tx, L, K) {
   for (t in 1:Tx) {
     Lambda <- Theta%*%truexi[t,,]
     truemu[t,] <- Lambda%*%truepsi[t,]
-    trueSigma[t,,] <- Lambda%*%t(Lambda) + SIGMA_X0
+    trueSigma[t,,] <- Lambda%*%t(Lambda) + diag(1, P, P)
   }
   ylim <- c(min(truemu), max(truemu))
   par(mfrow=c(1,2))
@@ -89,7 +90,7 @@ plot_truth <- function(kappa, tau, Tx, L, K) {
   }
 }
 
-plot_truth(kappa=100, tau=1, Tx=10, L=3, K=2)
+plot_truth(kappa=100, tau=1, Tx=10, L=3, K=2, P=10)
 
 #' # Simulate data from Gaussian Process in mean and variance for X
 #' $$X_{it} = \Lambda(t)\eta_{it}$$
@@ -150,6 +151,10 @@ lattice::levelplot(cor(X))
 #' $$y = \beta \eta + \eta^T \Delta \eta$$
 
 # Each row i is set of coefs for Ty=i for all factors at all time Tx
+SIGMA_Y <- rgamma(Ty, 1, 1)
+Ty <- 5
+ty <- rep(1:Ty, each=M)
+idy <- rep(1:M, Ty)
 GAMMA <- purrr::rbernoulli(K*Tx, p=0.3)*1
 BETA0 <- rnorm(K*Tx, 10, 1) * GAMMA
 SIGMA_B <- rgamma(K*Tx, 1, 1)
@@ -159,10 +164,6 @@ for (t in 2:Ty) {
   BETA[t,] <- rnorm(K*Tx, mean = BETA[t-1,], sd = SIGMA_B) * GAMMA
 }
 # TODO add Interactions
-SIGMA_Y <- rgamma(Ty, 1, 1)
-Ty <- 5
-ty <- rep(1:Ty, each=M)
-idy <- rep(1:M, Ty)
 etay <- transform_etay(eta, idx, Tx)
 Y <- rep(NA, Ty*M)
 for (t in 1:Ty) {
