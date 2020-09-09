@@ -6,4 +6,4 @@
 #SBATCH -p herringlab,statdept-low,volfovskylab-low
 export R_LIBS_USER=~/R/x86_64-pc-linux-gnu-library/3.6
 module load R
-R CMD BATCH sim001.R
+Rscript code/sim001.R
