@@ -137,6 +137,7 @@ xi <- aperm(xi, c(3,1,2))
 eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
 epsilon_x <- mvtnorm::rmvnorm(length(tx), mean = rep(0, P), sigma = SIGMA_X0)
 X <- t(sapply(1:length(tx), function(i) Theta%*%xi[i,,]%*%eta[i,] + epsilon_x[i,]))
+print("Simulated X")
 
 #' Correlation matrix of X at all times
 lattice::levelplot(cor(X))
@@ -184,6 +185,8 @@ abline(h=BETA0[1], col="red")
 plot(1:Ty, BETA[,2])
 abline(h=BETA0[2], col="red")
 
+print("Simulated Y")
+
 #' ### Running my sampler
 data <- list(
   X=X, Y=Y, 
@@ -196,8 +199,9 @@ data <- list(
 niter=10000
 nburn=5000
 nthin=5
+print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
 save(niter, truemu, trueSigma, KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0, file="code/samples/lintruth_003.RData")
 saveRDS(samples, file="code/samples/linsamples_003.RDS")
-
+print("Done")
