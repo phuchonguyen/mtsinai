@@ -151,10 +151,10 @@ lattice::levelplot(cor(X))
 #' $$y = \beta \eta + \eta^T \Delta \eta$$
 
 # Each row i is set of coefs for Ty=i for all factors at all time Tx
-SIGMA_Y <- rgamma(Ty, 1, 1)
 Ty <- 5
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
+SIGMA_Y <- rgamma(Ty, 1, 1)
 GAMMA <- purrr::rbernoulli(K*Tx, p=0.3)*1
 BETA0 <- rnorm(K*Tx, 10, 1) * GAMMA
 SIGMA_B <- rgamma(K*Tx, 1, 1)
