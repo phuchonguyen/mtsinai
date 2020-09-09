@@ -1,4 +1,4 @@
-funcpath <- "code/MyModel/functions"
+funcpath <- file.path(getwd(), "code/MyModel/functions")
 funcfiles <- list.files(path = funcpath)
 sapply(funcfiles, function(x) source(file.path(funcpath, x)))
 library("FastGP")
