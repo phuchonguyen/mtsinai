@@ -71,7 +71,7 @@ plot_truth <- function(kappa, tau, Tx, L, K, P) {
   for (t in 1:Tx) {
     Lambda <- Theta%*%truexi[t,,]
     truemu[t,] <- Lambda%*%truepsi[t,]
-    trueSigma[t,,] <- Lambda%*%t(Lambda) + diag(1, P, P)
+    trueSigma[t,,] <- Lambda%*%t(Lambda) + 1/rgamma(P, 1, 0.1)
   }
   ylim <- c(min(truemu), max(truemu))
   par(mfrow=c(1,2))
@@ -110,12 +110,14 @@ M <- 50     # Number of subjects
 KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
 TAU <- 1    # GP sqrt variance
-SIGMA_X0 <- diag(1, P, P)  # Error variance of X
+SIGMA_X0 <- diag(1/rgamma(P, 1, 0.1), P, P)  # Error variance of X
 Theta <- array(rnorm(P*L, 0, 1), dim = c(P, L))
 tx <- rep(1:Tx, M)  # TODO: Allow exposures to be missing at different times
 idx <- rep(1:M, each=Tx)
 truepsi <- cbind(rgp(1, 1:Tx, mu_zero, KAPPA, TAU),
                  rgp(1, 1:Tx, mu_zero, KAPPA, TAU))
+plot(truepsi[,1], type="l", col=3, ylim=c(min(truepsi), max(truepsi)))
+lines(truepsi[,2], type="l", col=2)
 truexi <- array(NA, dim = c(Tx, L, K))
 for (k in 1:K) {
   for (l in 1:L) {
@@ -154,10 +156,10 @@ lattice::levelplot(cor(X))
 Ty <- 5
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
-SIGMA_Y <- rgamma(Ty, 1, 1)
+SIGMA_Y <- 1/rgamma(Ty, 3, 1)
 GAMMA <- purrr::rbernoulli(K*Tx, p=0.3)*1
-BETA0 <- rnorm(K*Tx, 10, 1) * GAMMA
-SIGMA_B <- rgamma(K*Tx, 1, 1)
+BETA0 <- rnorm(K*Tx, 3, 2) * GAMMA
+SIGMA_B <- 1/rgamma(K*Tx, 6, 3)
 BETA <- array(NA, dim = c(Ty, K*Tx))
 BETA[1,] <- rnorm(K*Tx, mean = BETA0, sd = SIGMA_B) * GAMMA
 for (t in 2:Ty) {
@@ -167,8 +169,10 @@ for (t in 2:Ty) {
 etay <- transform_etay(eta, idx, Tx)
 Y <- rep(NA, Ty*M)
 for (t in 1:Ty) {
-  Y[((t-1)*M + 1) : (t*M)] <- etay%*%BETA[t,] + rnorm(M, 0, SIGMA_Y[t])
+  Y[ty==t] <- etay%*%BETA[t,] + rnorm(M, 0, SIGMA_Y[t])
+  print(var(Y[ty==t]))
 }
+
 par(mfrow=c(3,3))
 plot(etay[,1], Y[1:M], col=GAMMA[1]+1, cex=1)
 plot(etay[,3], Y[1:M], col=GAMMA[3]+1, cex=1)
@@ -185,7 +189,6 @@ plot(1:Ty, BETA[,1])
 abline(h=BETA0[1], col="red")
 plot(1:Ty, BETA[,2])
 abline(h=BETA0[2], col="red")
-
 print("Simulated Y")
 
 #' ### Running my sampler
@@ -197,12 +200,14 @@ data <- list(
   K=K, L=L
 )
 
-niter=10000
-nburn=5000
-nthin=5
+niter=2000
+nburn=1000
+nthin=1
 print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(niter, truemu, trueSigma, KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
-     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0, file="code/samples/lintruth_003.RData")
-saveRDS(samples, file="code/samples/linsamples_003.RDS")
+save(niter, truemu, trueSigma, Theta, truexi, truepsi,
+     KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
+     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0,
+     file="code/samples/lintruth_007.RData")
+saveRDS(samples, file="code/samples/linsamples_007.RDS")
 print("Done")

@@ -34,6 +34,7 @@ init_params <- function(X, Y,
   gamma <- rbinom(py, 1, pi_gamma)
   beta <- matrix(0, Ty, py)
   beta0 <- rep(0, py)
+  alpha <- sapply(1:Ty, function(t) mean(Y[ty==t]))
   #beta_int <- rep(0,p)
   #beta_z <- rep(0,ncol(Z))  #TODO: add this
   sigmay <- rep(1, Ty)
@@ -48,7 +49,7 @@ init_params <- function(X, Y,
   xi <- array(rnorm(nx*L*K), dim = c(nx, L, K))
   psi <- array(rnorm(nx*K), dim = c(nx, K))
   theta <- array(rnorm(px*L), dim = c(px, L))
-  sigmax <- rgamma(px, 1)
+  sigmax <- 1/rgamma(px, 1, 1)
   phi <- array(rgamma(px*L, 1), dim = c(px, L))
   delta <- rgamma(L, 1)
   Kgp <- se_cov(tx, sigma = tau, kappa = kappa)  # TODO: estmate tau and kappa
@@ -62,6 +63,7 @@ init_params <- function(X, Y,
     gamma = gamma,
     beta = beta,
     beta0 = beta0,
+    alpha = alpha,
     #beta_int = beta_int,
     #beta_z = beta_z,  # TODO: Add
     sigmay = sigmay,
