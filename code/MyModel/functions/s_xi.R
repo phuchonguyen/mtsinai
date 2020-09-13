@@ -1,15 +1,15 @@
 #TODO: keep S and A as sparse???
 #TODO: optimize inversion of the matrices in GP
 
-s_xi <- function(params, const, args=NULL) {
-  L <- const$L
-  K <- const$K
-  X <- const$X
-  theta <- params$theta
-  xi <- params$xi
-  eta <- params$eta
-  sx <- diag(params$sigmax)  # sx is a matrix
-  Kinv <- params$Kinv
+s_xi <- function(prm, cst, args=NULL) {
+  L <- cst$L
+  K <- cst$K
+  X <- cst$X
+  theta <- prm$theta
+  xi <- prm$xi
+  eta <- prm$eta
+  sx <- diag(prm$sigmax)  # sx is a matrix
+  Kinv <- prm$Kinv
   n <- nrow(X)
   
   sxinv <- diag(1/diag(sx)) # Sigma_0 is a diagonal matrix
@@ -28,8 +28,8 @@ s_xi <- function(params, const, args=NULL) {
     }
   }
   
-  params[["xi"]] <- xi
-  return(params)
+  prm[["xi"]] <- xi
+  return(prm)
 }
 
 

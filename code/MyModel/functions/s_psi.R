@@ -1,11 +1,11 @@
-s_psi <- function(params, const, args=NULL) {
-  K <- const$K
-  X <- const$X
-  sx <- diag(params$sigmax)  # sx is a matrix
-  psi <- params$psi
-  Kinv <- params$Kinv
-  theta <- params$theta
-  xi <- params$xi
+s_psi <- function(prm, cst, args=NULL) {
+  K <- cst$K
+  X <- cst$X
+  sx <- diag(prm$sigmax)  # sx is a matrix
+  psi <- prm$psi
+  Kinv <- prm$Kinv
+  theta <- prm$theta
+  xi <- prm$xi
   n <- nrow(X)
   
   omega <- lapply(1:n, function(i) theta%*%xi[i,,])
@@ -22,8 +22,8 @@ s_psi <- function(params, const, args=NULL) {
     psi[,k] <- rcpp_rmvnorm(1, S=Stilda, mu=mutilda)
   }
   
-  params[["psi"]] <- psi
-  return(params)
+  prm[["psi"]] <- psi
+  return(prm)
 }
 
 

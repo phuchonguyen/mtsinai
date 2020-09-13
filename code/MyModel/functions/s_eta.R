@@ -5,17 +5,16 @@
 s_eta <- function(prm, cst, args=NULL) {
   eta <- prm$eta
   
-  for (i in unique(cst$idx)) {
+  for (i in 1:nrow(eta)) {
     # Propose eta
     #TODO: Code up HMC, for now use MH
     eta_star <- eta
-    sigma_eta <- apply(eta, 2, sd)  #TODO: Is there a better way??
-    eta_star[i,] <- propose_eta(eta[i,], method="MH", sigma=sigma_eta)
+    eta_star[i,] <- mvtnorm::rmvnorm(1, mean=prm$psi[i,])  # proposes from the sampling model
     
     # Accept/Reject proposal  
-    eta_loglike <- eta_neg_loglike(eta, prm, cst)
-    eta_star_loglike <- eta_neg_loglike(eta_star, prm, cst)
-    logr <- eta_loglike - eta_star_loglike
+    eta_l <- eta_loglike(i, eta, prm, cst)
+    eta_star_l <- eta_loglike(i, eta_star, prm, cst)
+    logr <- eta_star_l - eta_l
     
     if (log(runif(1)) < logr) {
       eta <- eta_star
@@ -30,21 +29,22 @@ s_eta <- function(prm, cst, args=NULL) {
 
 #TODO: Add other covariates
 #TODO: Add quadratic terms
-eta_neg_loglike <- function(eta, prm, cst) {
-  etay <- transform_etay(eta, cst$idx, cst$Tx)
-  muy <- get_muy(prm, cst, eta=eta)
+eta_loglike <- function(i, eta, prm, cst) {
+  id <- cst$idx[i]
   
-  Y_loglike <- sum(sapply(1:length(muy), 
-                          function(i) -0.5*muy[i]^2/prm$sigmay[cst$ty[i]]))
-  X_loglike <- sum(sapply(1:nrow(cst$X), 
-                          function(i) {
-                            mux <- cst$X[i,] - prm$theta%*%prm$xi[i,,]%*%eta[i,]
-                            return(-0.5*t(mux)%*%diag(1/prm$sigmax)%*%mux)
-                          }))
-  eta_loglike <- sum(sapply(1:nrow(eta), 
-                            function(i)
-                              -0.5*t(eta[i,]-prm$psi[i,])%*%(eta[i,]-prm$psi[i,])))
-  return(-(Y_loglike + X_loglike + eta_loglike))
+  etay <- transform_etay(eta, cst$idx, cst$Tx)[id,]
+  idc <- cst$idy==id
+  muy <- cst$Y[idc] - (diag(1, sum(idc)) %x% t(etay)) %*% as.vector(t(prm$beta)[,cst$ty[idc]]) - prm$alpha[cst$ty[idc]]
+  Syi <- diag(1/prm$sigmay[cst$ty[idc]])
+  Y_loglike <- -0.5*t(muy)%*%Syi%*%muy
+  
+  mux <- cst$X[i,] - prm$theta%*%prm$xi[i,,]%*%eta[i,]
+  Sxi <- diag(1/prm$sigmax)
+  X_loglike <- -0.5*t(mux)%*%Sxi%*%mux
+  
+  eta_loglike <- -0.5*t(prm$psi[i,]-eta[i,])%*%(prm$psi[i,]-eta[i,])
+  
+  return((Y_loglike + X_loglike + eta_loglike))
 }
 
 

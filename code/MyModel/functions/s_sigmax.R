@@ -1,20 +1,20 @@
-s_sigmax <- function(params, const, args=NULL) {
-  X <- const$X
-  theta <- params$theta
-  xi <- params$xi
-  eta <- params$eta
-  a0 <- const$asx
-  b0 <- const$bsx
+s_sigmax <- function(prm, cst, args=NULL) {
+  X <- cst$X
+  theta <- prm$theta
+  xi <- prm$xi
+  eta <- prm$eta
+  a0 <- cst$asx
+  b0 <- cst$bsx
   
   p <- ncol(X)
   n <- nrow(X)
   sigmax <- rep(NA, p)
   for (j in 1:p) {
-    a <- a0 + n/2
-    b <- b0 + sum(sapply(1:n, function(i) (X[i,j] - t(theta[j,])%*%xi[i,,]%*%eta[i,])^2))/2
-    sigmax[j] <- 1/rgamma(1, a, b)
+    a <- a0 + n
+    b <- b0 + sum(sapply(1:n, function(i) (X[i,j] - t(theta[j,])%*%xi[i,,]%*%eta[i,])^2))  # TODO: Optimize
+    sigmax[j] <- 1/rgamma(1, 0.5*a, 0.5*b)
   }
   
-  params[["sigmax"]] <- sigmax
-  return(params)
+  prm[["sigmax"]] <- sigmax
+  return(prm)
 }

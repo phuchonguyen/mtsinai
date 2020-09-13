@@ -1,11 +1,11 @@
-s_theta <- function(params, const, args=NULL) {
-  X <- const$X
-  phi <- params$phi
-  delta <- params$delta
-  eta <- params$eta
-  xi <- params$xi
-  theta <- params$theta
-  sigmax <- params$sigmax
+s_theta <- function(prm, cst, args=NULL) {
+  X <- cst$X
+  phi <- prm$phi
+  delta <- prm$delta
+  eta <- prm$eta
+  xi <- prm$xi
+  theta <- prm$theta
+  sigmax <- prm$sigmax
   
   n <- nrow(X)
   p <- ncol(X)
@@ -18,6 +18,6 @@ s_theta <- function(params, const, args=NULL) {
     theta[j,] <- rcpp_rmvnorm(1, S=Stilda, mu=mutilda)
   }
   
-  params[["theta"]] <- theta
-  return(params)
+  prm[["theta"]] <- theta
+  return(prm)
 }

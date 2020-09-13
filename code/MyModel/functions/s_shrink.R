@@ -1,17 +1,17 @@
-s_phidelta <- function(params, const, args=NULL) {
-  params <- s_phi(params, const, args=args)
-  params <- s_delta(params, const, args=args)
-  return(params)
+s_phidelta <- function(prm, cst, args=NULL) {
+  prm <- s_phi(prm, cst, args=args)
+  prm <- s_delta(prm, cst, args=args)
+  return(prm)
 } 
 
 
-s_delta <- function(params, const, args=NULL) {
-  a1 <- const$a1delta
-  a2 <- const$a2delta
-  L <- const$L
-  theta <- params$theta
-  phi <- params$phi  # (p x L)
-  delta <- params$delta
+s_delta <- function(prm, cst, args=NULL) {
+  a1 <- cst$a1delta
+  a2 <- cst$a2delta
+  L <- cst$L
+  theta <- prm$theta
+  phi <- prm$phi  # (p x L)
+  delta <- prm$delta
   p <- nrow(theta)
   
   b <- sapply(1:L, function(l) t(phi[,l])%*%theta[,l]^2)
@@ -23,17 +23,17 @@ s_delta <- function(params, const, args=NULL) {
     delta[h] <- rgamma(1, a2+p*(L-h+1)/2, 1+(b%*%tau_h)/2)
   }
   
-  params[["delta"]] <- delta
-  return(params)
+  prm[["delta"]] <- delta
+  return(prm)
 }
 
 
-s_phi <- function(params, const, args=NULL) {
-  L <- const$L
-  b0 <- const$bphi
-  delta <- params$delta
-  theta <- params$theta
-  phi <- params$phi
+s_phi <- function(prm, cst, args=NULL) {
+  L <- cst$L
+  b0 <- cst$bphi
+  delta <- prm$delta
+  theta <- prm$theta
+  phi <- prm$phi
   
   p <- nrow(theta)
   tau <- get_factor_tau(delta)
@@ -44,8 +44,8 @@ s_phi <- function(params, const, args=NULL) {
     }
   }
   
-  params[["phi"]] <- phi
-  return(params)
+  prm[["phi"]] <- phi
+  return(prm)
 }
 
 

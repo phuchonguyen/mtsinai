@@ -49,11 +49,11 @@ get_muy <- function(params, const, eta=NULL, j=NULL) {
   #etay_int <- etay^2
   if (is.null(j)) {
     muy <- sapply(1:length(Y), function(i) {
-      const$Y[i] - t(etay[const$idy[i],])%*%(params$beta[const$ty[i], ])
+      const$Y[i] - t(etay[const$idy[i],])%*%(params$beta[const$ty[i], ]) - params$alpha[const$ty[i]]
     }) 
   } else {
     muy <- sapply(1:length(Y), function(i) {
-      const$Y[i] - t(etay[const$idy[i],-j])%*%(params$beta[const$ty[i], -j])
+      const$Y[i] - t(etay[const$idy[i],-j])%*%(params$beta[const$ty[i], -j]) - params$alpha[const$ty[i]]
     })
   }
   #+etay_int[const$idy,]%*%params$beta_int)
@@ -65,7 +65,7 @@ get_muy <- function(params, const, eta=NULL, j=NULL) {
 # So each individual has one row, sorted by increasing ID
 transform_etay <- function(eta, idx, Tx) {
   uidx <- sort(unique(idx))
-  etay <- t(sapply(uidx, function(i) as.vector(eta[idx==i,])))
+  etay <- t(sapply(uidx, function(i) as.vector(t(eta[idx==i,]))))
   eta_names <- sapply(1:ncol(eta), function(k) paste("eta", k, sep=""))
   etay_names <- as.vector(t(sapply(1:Tx, function(t) paste(eta_names, t, sep="_"))))
   colnames(etay) <- etay_names
