@@ -4,7 +4,8 @@
 #'   pdf_document:
 #'     keep_tex: true
 #' ---
-source(file.path(getwd(), "code/MyModel/Sampler.R"))
+print(getwd())
+source("/work/phn5/mtsinai/mtsinai/code/MyModel/Sampler.R")
 # TODO: By the model notation: N is number of cases, S is N*Tx
 # TODO: Use function to_etai_reg in helpers.R 
 
@@ -202,7 +203,7 @@ nburn=5000
 nthin=5
 print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(niter, truemu, trueSigma, KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
-     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0, file="code/samples/lintruth_003.RData")
-saveRDS(samples, file="code/samples/linsamples_003.RDS")
+save(niter, truemu, trueSigma, truepsi, truexi, Theta, KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
+     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0, file="/work/phn5/mtsinai/mtsinai/code/samples/lintruth_006.RData")
+saveRDS(samples, file="/work/phn5/mtsinai/mtsinai/code/samples/linsamples_006.RDS")
 print("Done")
