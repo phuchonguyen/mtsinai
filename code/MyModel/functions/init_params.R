@@ -95,11 +95,11 @@ init_params <- function(X, Y,
     idy = idy,
     Tx = Tx, 
     Ty = Ty,
-    a1delta = 1,  # params for shrinkage factor
-    a2delta = 1,  # params for shrinkage factor
-    bphi = 1,     # params for shrinkage factor
-    asx = 1,      # for Gamma prior on Sigma_X = diag(sigmax_1,...,sigmax_p)
-    bsx = 1,      # for Gamma prior on Sigma_X
+    a1delta = 2,  # params for shrinkage factor, from simulation in Fox 2015
+    a2delta = 2,  # params for shrinkage factor, from simulation in Fox 2015
+    bphi = 3,     # params for shrinkage factor, from simulation in Fox 2015
+    asx = 2,      # for Gamma prior on Sigma_X = diag(sigmax_1,...,sigmax_p), value from simulation
+    bsx = 0.1,    # for Gamma prior on Sigma_X, value from simulation
     asy = 1,      # for Gamma prior on Sigma_Yt
     bsy = 1,      # for Gamma prior on Sigma_Yt
     V = V,        # Covariance of beta_.j
