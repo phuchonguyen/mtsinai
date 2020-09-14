@@ -57,22 +57,38 @@ mu_sine <- function(v, args=NULL) {
 }
 
 # Plotting true functions 
-plot_truth <- function(kappa, tau, Tx, L, K, P) {
-  Theta <- array(rnorm(P*L, 0, 1), dim = c(P, L))
+plot_truth <- function(kappa, tau, Tx, L, K, P,
+                       a1=10, a2=10, gtheta=3) {
+  # Generate Theta
+  truedelta <- rgamma(1, a1, 1)
+  truedelta <- c(truedelta, rgamma(L-1, a2, 1))
+  truetau <- get_factor_tau(truedelta)
+  truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
+  Theta <- array(NA, dim = c(P, L))
+  for (j in 1:P) {
+    for (l in 1:L) {
+      Theta[j,l] <- rnorm(1, 0, 1/sqrt(truephi[j,l] * truetau[l]))
+    }
+  }
+  # Generate Psi
   truepsi <- cbind(rgp(1, 1:Tx, mu_zero, kappa, tau),
                    rgp(1, 1:Tx, mu_zero, kappa, tau))
+  # Generate Xi
   truexi <- array(NA, dim = c(Tx, L, K))
   for (k in 1:K) {
     for (l in 1:L) {
       truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, kappa, tau)
     }
   }
+  
+  # Use Theta, Xi, Psi to make Mu and Sigma
   truemu <- array(NA, dim = c(Tx, P))
   trueSigma <- array(NA, dim = c(Tx, P, P))
+  sigma_x0 <- 1/rgamma(P, 2, 0.1) # TODO: Note this!! In Fox 2015 they use rgamma(1, 0.1) but the variance of that is too big
   for (t in 1:Tx) {
     Lambda <- Theta%*%truexi[t,,]
     truemu[t,] <- Lambda%*%truepsi[t,]
-    trueSigma[t,,] <- Lambda%*%t(Lambda) + 1/rgamma(P, 1, 0.1)
+    trueSigma[t,,] <- Lambda%*%t(Lambda)  +  sigma_x0
   }
   ylim <- c(min(truemu), max(truemu))
   par(mfrow=c(1,2))
@@ -91,7 +107,8 @@ plot_truth <- function(kappa, tau, Tx, L, K, P) {
   }
 }
 
-plot_truth(kappa=100, tau=1, Tx=10, L=3, K=2, P=10)
+plot_truth(kappa=100, tau=1, Tx=10, L=3, K=2, P=10,
+           a1=10, a2=10, gtheta=10)
 
 #' # Simulate data from Gaussian Process in mean and variance for X
 #' $$X_{it} = \Lambda(t)\eta_{it}$$
@@ -111,20 +128,34 @@ M <- 50     # Number of subjects
 KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
 TAU <- 1    # GP sqrt variance
-SIGMA_X0 <- diag(1/rgamma(P, 1, 0.1), P, P)  # Error variance of X
-Theta <- array(rnorm(P*L, 0, 1), dim = c(P, L))
+SIGMA_X0 <- diag(1/rgamma(P, 2, 0.1), P, P)  # Error variance of X
 tx <- rep(1:Tx, M)  # TODO: Allow exposures to be missing at different times
 idx <- rep(1:M, each=Tx)
+# Generate Theta
+a1 <- a2 <- gtheta <- 10
+truedelta <- rgamma(1, a1, 1)
+truedelta <- c(truedelta, rgamma(L-1, a2, 1))
+truetau <- get_factor_tau(truedelta)
+truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
+Theta <- array(NA, dim = c(P, L))
+for (j in 1:P) {
+  for (l in 1:L) {
+    Theta[j,l] <- rnorm(1, 0, 1/sqrt(truephi[j,l] * truetau[l]))
+  }
+}
+# Generate Psi
 truepsi <- cbind(rgp(1, 1:Tx, mu_zero, KAPPA, TAU),
                  rgp(1, 1:Tx, mu_zero, KAPPA, TAU))
 plot(truepsi[,1], type="l", col=3, ylim=c(min(truepsi), max(truepsi)))
 lines(truepsi[,2], type="l", col=2)
+# Generate Xi
 truexi <- array(NA, dim = c(Tx, L, K))
 for (k in 1:K) {
   for (l in 1:L) {
     truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
   }
 }
+# Calculate Mu & Sigma
 truemu <- array(NA, dim = c(Tx, P))
 trueSigma <- array(NA, dim = c(Tx, P, P))
 for (t in 1:Tx) {
@@ -158,7 +189,7 @@ Ty <- 5
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
 SIGMA_Y <- 1/rgamma(Ty, 3, 1)
-GAMMA <- purrr::rbernoulli(K*Tx, p=0.3)*1
+GAMMA <- (runif(K*Tx) <= 0.3)*1
 BETA0 <- rnorm(K*Tx, 3, 2) * GAMMA
 SIGMA_B <- 1/rgamma(K*Tx, 6, 3)
 BETA <- array(NA, dim = c(Ty, K*Tx))
@@ -201,12 +232,14 @@ data <- list(
   K=K, L=L
 )
 
-niter=2000
-nburn=1000
-nthin=1
+niter=5000
+nburn=3000
+nthin=2
 print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(niter, truemu, trueSigma, truepsi, truexi, Theta, KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
-     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0, file="/work/phn5/mtsinai/mtsinai/code/samples/lintruth_006.RData")
-saveRDS(samples, file="/work/phn5/mtsinai/mtsinai/code/samples/linsamples_006.RDS")
+save(niter, truemu, trueSigma, Theta, truexi, truepsi,
+     KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
+     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0,
+     file=file.path(getwd(),"code/samples/lintruth_007.RData"))
+saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_007.RDS"))
 print("Done")
