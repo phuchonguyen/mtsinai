@@ -15,10 +15,10 @@ s_psi <- function(prm, cst, args=NULL) {
   for (k in 1:K) {
     Xtilda <- lapply(1:n, function(i) mu[[i]] + omega[[i]][,k]*psi[i,k])
     os <- lapply(1:n, function(i) t(omega[[i]][,k])%*%sinv[[i]])
-    osX <- lapply(1:n, function(i) os[[i]]%*%Xtilda[[i]])
-    oso <- lapply(1:n, function(i) os[[i]]%*%omega[[i]][,k])
-    Stilda <- rcppeigen_invert_matrix(as.matrix(bdiag(oso)) + Kinv)
-    mutilda <- Stilda%*%unlist(osX)
+    osX <- unlist(lapply(1:n, function(i) os[[i]]%*%Xtilda[[i]]))
+    oso <- unlist(lapply(1:n, function(i) os[[i]]%*%omega[[i]][,k]))
+    Stilda <- rcppeigen_invert_matrix(diag(oso) + Kinv)
+    mutilda <- Stilda%*%osX
     psi[,k] <- rcpp_rmvnorm(1, S=Stilda, mu=mutilda)
   }
   

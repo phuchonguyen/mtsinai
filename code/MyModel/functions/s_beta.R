@@ -1,64 +1,48 @@
 s_gamma_beta <- function(prm, cst) {
   gamma <- prm$gamma
   beta <- prm$beta
-  beta0 <- prm$beta0
   sigmab <- prm$sigmab
-  pi_gamma <- prm$pi_gamma
-  
   etay <- transform_etay(prm$eta, cst$idx, cst$Tx)
   Syi <- diag(1/prm$sigmay[cst$ty])
   Sy <- diag(prm$sigmay[cst$ty])
+  pi_gamma <- rep(NA, length(gamma))
   
   p <- length(gamma)
   for (j in 1:p) {
+    
     # Sample gamma_j
     muy <- get_muy(prm, cst, j=j)  # Y - eta_-j %*% beta_-j - alpha
     Aj <- diag(1,Ty) %x% etay[,j] 
-    Vg <- Sy + Aj%*%cst$V%*%t(Aj)*sigmab[j]
-    Vgi <- rcppeigen_invert_matrix(Vg)
-    #Vgd <- det(Vg)
-    #Syd <- prod(prm$sigmay[cst$ty])  DONT USE THIS BECAUSE Syd goes to Inf!!!
-    # rj <- (-0.5*log(Syd) -0.5*t(muy)%*%Syi%*%muy) - 
-    #   (-0.5*log(Vgd) -0.5*t(muy)%*%Vgi%*%muy)
     Vb <- rcppeigen_invert_matrix(cst$Vinv/sigmab[j] + t(Aj)%*%Syi%*%Aj)
     Vbd <- det(Vb)
     mj <- as.vector(t(Aj)%*%Syi%*%muy)
-    rj <- -0.5*log(cst$Vdet) + 0.5*log(Vbd) - 0.5*cst$Ty*log(sigmab[j]) +
-            0.5*t(mj)%*%Vb%*%mj
-    rj <- as.numeric(rj)  # the same result as above
-    pj <- 1/(1 + (1-pi_gamma)*exp(rj)/pi_gamma)
-    gamma[j] <- 1*(runif(1) <= pj)  
+    rj1 <- -0.5*log(cst$Vdet) + 0.5*log(Vbd) - 0.5*cst$Ty*log(sigmab[j]) +
+      0.5*t(mj)%*%Vb%*%mj
+    rj1 <- as.numeric(rj1)
+    pj0 <- cst$pi_gamma0/(cst$pi_gamma0 + (1-cst$pi_gamma0)*exp(rj1))
+    gamma[j] <- 1*(runif(1) > pj0)
+    pi_gamma[j] <- pj0
     
     if (gamma[j] == 1) {
-      # Sample beta0_j
-      IA <- Aj%*%rep(1, ncol(Aj))
-      Vo <- 1/as.numeric(t(IA)%*%Vgi%*%IA + 1/cst$sb0[j])
-      mo <- as.numeric(Vo * t(IA)%*%Vgi%*%muy)
-      beta0[j] <- rnorm(1, mo, sqrt(Vo))
-      
       # Sample beta_j
-      mbj <- mj + cst$Vinv%*%rep(1, ncol(cst$Vinv))*beta0[j]/sigmab[j]
-      beta[,j] <- as.vector(mvtnorm::rmvnorm(1, mean = Vb%*%mbj, sigma = Vb))
+      mbj <- mj  # + cst$Vinv%*%rep(1, ncol(cst$Vinv))*beta0[j]/sigmab[j]
+      beta[,j] <- rcpp_rmvnorm(1, mu = Vb%*%mbj, S = Vb)
       
       # Sample sigmab_j
       aj <- cst$Ty + cst$asb 
-      bj <- t(beta[,j] - beta0[j]) %*% cst$Vinv %*% (beta[,j] - beta0[j]) + cst$bsb
+      bj <- t(beta[,j])%*%cst$Vinv%*%beta[,j] + cst$bsb
       sigmab[j] <- 1/rgamma(1, 0.5*aj, 0.5*bj)
+      
     } else {
-      beta0[j] <- 0
       beta[,j] <- 0
       sigmab[j] <- 1/rgamma(1, 0.5*cst$asb, 0.5*cst$bsb)
     }
   }
   
-  pi_gamma <- rbeta(1, 1+sum(gamma), 1+length(gamma)-sum(gamma))
-  
   prm[["gamma"]] <- gamma
   prm[["beta"]] <- beta
-  prm[["beta0"]] <- beta0
   #prm[["beta_int"]] <- beta_int
-  prm[["pi_gamma"]] <- pi_gamma
+  prm[["pi_gamma"]] <- pi_gamma  # Probability that it's 0
   prm[["sigmab"]] <- sigmab
   return(prm)
 }
-

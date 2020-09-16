@@ -58,7 +58,7 @@ mu_sine <- function(v, args=NULL) {
 
 # Plotting true functions 
 plot_truth <- function(kappa, tau, Tx, L, K, P,
-                       a1=10, a2=10, gtheta=3) {
+                       a1=10, a2=10, gtheta=3, sxa=2, sxb=0.1) {
   # Generate Theta
   truedelta <- rgamma(1, a1, 1)
   truedelta <- c(truedelta, rgamma(L-1, a2, 1))
@@ -84,7 +84,7 @@ plot_truth <- function(kappa, tau, Tx, L, K, P,
   # Use Theta, Xi, Psi to make Mu and Sigma
   truemu <- array(NA, dim = c(Tx, P))
   trueSigma <- array(NA, dim = c(Tx, P, P))
-  sigma_x0 <- 1/rgamma(P, 2, 0.1) # TODO: Note this!! In Fox 2015 they use rgamma(1, 0.1) but the variance of that is too big
+  sigma_x0 <- 1/rgamma(P, sxa, sxb) # TODO: Note this!! In Fox 2015 they use rgamma(1, 0.1) but the variance of that is too big
   for (t in 1:Tx) {
     Lambda <- Theta%*%truexi[t,,]
     truemu[t,] <- Lambda%*%truepsi[t,]
@@ -128,9 +128,13 @@ M <- 50     # Number of subjects
 KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
 TAU <- 1    # GP sqrt variance
-SIGMA_X0 <- diag(1/rgamma(P, 2, 0.1), P, P)  # Error variance of X
+SXA <- 2
+SXB <- 0.1
+SIGMA_X0 <- diag(1/rgamma(P, SXA, SXB), P, P)  # Error variance of X
 tx <- rep(1:Tx, M)  # TODO: Allow exposures to be missing at different times
 idx <- rep(1:M, each=Tx)
+
+
 # Generate Theta
 a1 <- a2 <- gtheta <- 10
 truedelta <- rgamma(1, a1, 1)
@@ -143,11 +147,15 @@ for (j in 1:P) {
     Theta[j,l] <- rnorm(1, 0, 1/sqrt(truephi[j,l] * truetau[l]))
   }
 }
+
+
 # Generate Psi
 truepsi <- cbind(rgp(1, 1:Tx, mu_zero, KAPPA, TAU),
                  rgp(1, 1:Tx, mu_zero, KAPPA, TAU))
 plot(truepsi[,1], type="l", col=3, ylim=c(min(truepsi), max(truepsi)))
 lines(truepsi[,2], type="l", col=2)
+
+
 # Generate Xi
 truexi <- array(NA, dim = c(Tx, L, K))
 for (k in 1:K) {
@@ -155,6 +163,13 @@ for (k in 1:K) {
     truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
   }
 }
+
+
+# Generate eta
+psi <- t(sapply(tx, function(t) truepsi[t,]))
+eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
+
+
 # Calculate Mu & Sigma
 truemu <- array(NA, dim = c(Tx, P))
 trueSigma <- array(NA, dim = c(Tx, P, P))
@@ -165,13 +180,7 @@ for (t in 1:Tx) {
 }
 
 #' ### Generate X from the truth
-
-psi <- t(sapply(tx, function(t) truepsi[t,]))
-xi <- array(unlist(lapply(tx, function(t) truexi[t,,])), dim=c(L, K, Tx*M))
-xi <- aperm(xi, c(3,1,2))
-eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
-epsilon_x <- mvtnorm::rmvnorm(length(tx), mean = rep(0, P), sigma = SIGMA_X0)
-X <- t(sapply(1:length(tx), function(i) Theta%*%xi[i,,]%*%eta[i,] + epsilon_x[i,]))
+X <- t(sapply(tx, function(t)  mvtnorm::rmvnorm(1, mean=truemu[t,], sigma=trueSigma[t,,])))
 print("Simulated X")
 
 #' Correlation matrix of X at all times
@@ -188,40 +197,43 @@ lattice::levelplot(cor(X))
 Ty <- 5
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
-SIGMA_Y <- 1/rgamma(Ty, 3, 1)
+SIGMA_Y <- sort(1/rgamma(Ty, 10, 1)) 
 GAMMA <- (runif(K*Tx) <= 0.3)*1
-BETA0 <- rnorm(K*Tx, 3, 2) * GAMMA
-SIGMA_B <- 1/rgamma(K*Tx, 6, 3)
+SIGMA_B <- 1/rgamma(K*Tx, 5, 1)
 BETA <- array(NA, dim = c(Ty, K*Tx))
-BETA[1,] <- rnorm(K*Tx, mean = BETA0, sd = SIGMA_B) * GAMMA
+BETA[1,] <- rnorm(K*Tx, mean = rep(1, K*Tx), sd = sqrt(SIGMA_B)) * GAMMA
 for (t in 2:Ty) {
-  BETA[t,] <- rnorm(K*Tx, mean = BETA[t-1,], sd = SIGMA_B) * GAMMA
+  BETA[t,] <- rnorm(K*Tx, mean = BETA[t-1,], sd = sqrt(SIGMA_B)) * GAMMA
 }
+ALPHA <- rnorm(Ty)
 # TODO add Interactions
 etay <- transform_etay(eta, idx, Tx)
 Y <- rep(NA, Ty*M)
 for (t in 1:Ty) {
-  Y[ty==t] <- etay%*%BETA[t,] + rnorm(M, 0, SIGMA_Y[t])
+  Y[ty==t] <- ALPHA[t] + etay%*%BETA[t,] + rnorm(sum(ty==t), 0, sqrt(SIGMA_Y[t]))
   print(var(Y[ty==t]))
 }
 
-par(mfrow=c(3,3))
-plot(etay[,1], Y[1:M], col=GAMMA[1]+1, cex=1)
-plot(etay[,3], Y[1:M], col=GAMMA[3]+1, cex=1)
-plot(etay[,5], Y[1:M], col=GAMMA[5]+1, cex=1)
-plot(etay[,2], Y[1:M], col=GAMMA[2]+1, cex=1)
-plot(etay[,9], Y[1:M], col=GAMMA[9]+1, cex=1)
-plot(etay[,20], Y[1:M], col=GAMMA[20]+1, cex=1)
-plot(etay[,2], Y[(1+M):(2*M)], col=GAMMA[2]+1, cex=1)
-plot(etay[,9], Y[(1+M):(2*M)], col=GAMMA[9]+1, cex=1)
-plot(etay[,20], Y[(1+M):(2*M)], col=GAMMA[20]+1, cex=1)
+tempid1 <- which(GAMMA==1)[1]
+tempid2 <- which(GAMMA==1)[2]
+tempid3 <- which(GAMMA==1)[3]
+par(mfrow=c(2,2))
+plot(etay[,1], Y[ty==1], col=GAMMA[1]+1, cex=1)
+plot(etay[,tempid], Y[ty==1], col=GAMMA[tempid1]+1, cex=1)
+plot(etay[,tempid], Y[ty==1], col=GAMMA[tempid2]+1, cex=1)
+plot(etay[,tempid], Y[ty==1], col=GAMMA[tempid3]+1, cex=1)
 
-par(mfrow=c(1,2))
+par(mfrow=c(2,2))
 plot(1:Ty, BETA[,1])
-abline(h=BETA0[1], col="red")
-plot(1:Ty, BETA[,2])
-abline(h=BETA0[2], col="red")
+abline(h=BETA[1,1], col="red")
+plot(1:Ty, BETA[,tempid1])
+abline(h=BETA[1, tempid1], col="red")
+plot(1:Ty, BETA[,tempid2])
+abline(h=BETA[1, tempid2], col="red")
+plot(1:Ty, BETA[,tempid3])
+abline(h=BETA[1, tempid3], col="red")
 print("Simulated Y")
+
 
 #' ### Running my sampler
 data <- list(
@@ -232,14 +244,14 @@ data <- list(
   K=K, L=L
 )
 
-niter=5000
-nburn=3000
-nthin=2
+niter=10000
+nburn=5000
+nthin=5
 print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(niter, truemu, trueSigma, Theta, truexi, truepsi,
+save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
-     Y, BETA0, BETA, GAMMA, SIGMA_B, SIGMA_Y, SIGMA_X0,
-     file=file.path(getwd(),"code/samples/lintruth_007.RData"))
-saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_007.RDS"))
+     Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
+     file=file.path(getwd(),"code/samples/lintruth_009.RData"))
+saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_009.RDS"))
 print("Done")
