@@ -1,10 +1,3 @@
-# Convert eta_i from "long" form from Factor Model to "wide" form for regression
-# Ex: rbind(eta_i1, eta_i2, eta_i3) to c(eta_i1, eta_i2, eta_i3)
-to_etai_reg <- function(etai_fac) {
-  return(as.vector(t(etai_fac)))
-}
-
-
 # Generate covariance matrix for Squared Exponential kernel
 # c(x, x') = sigma^2 exp(-kappa||x-x'||^2_2)4
 # Add a perturbation to make positive definite
@@ -71,12 +64,4 @@ transform_etay <- function(eta, idx, Tx) {
   colnames(etay) <- etay_names
   rownames(etay) <- uidx
   return(etay)
-}
-
-
-# Orthogonal projection onto col(X)
-get_projection_matrix <- function(X) {
-  n <- nrow(X)
-  if (is.null(n)) {n <- 1}
-  return(diag(n) - X%*%solve(t(X)%*%X)%*%t(X))
 }

@@ -108,7 +108,8 @@ init_params <- function(X, Y,
     asb = 1,      # for Gamma prior on Sigma_beta
     bsb = 1,      # for ''  Sigma_beta
     mb0 = rep(0, py),      # mean beta0
-    sb0 = rep(10, py)      # variance beta0
+    sb0 = rep(10, py),      # variance beta0
+    pi_gamma0 = 0.5   # prior prob. of gammaj = 0
   )
   
   return(list(params=params, const=const))
