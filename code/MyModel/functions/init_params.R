@@ -30,7 +30,7 @@ init_params <- function(X, Y,
   
   # Y regression initial values
   py <- K*Tx
-  pi_gamma <- 0.5
+  pi_gamma <- runif(py)
   gamma <- rbinom(py, 1, pi_gamma)
   beta <- matrix(0, Ty, py)
   beta0 <- rep(0, py)
