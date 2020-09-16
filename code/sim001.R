@@ -219,9 +219,9 @@ tempid2 <- which(GAMMA==1)[2]
 tempid3 <- which(GAMMA==1)[3]
 par(mfrow=c(2,2))
 plot(etay[,1], Y[ty==1], col=GAMMA[1]+1, cex=1)
-plot(etay[,tempid], Y[ty==1], col=GAMMA[tempid1]+1, cex=1)
-plot(etay[,tempid], Y[ty==1], col=GAMMA[tempid2]+1, cex=1)
-plot(etay[,tempid], Y[ty==1], col=GAMMA[tempid3]+1, cex=1)
+plot(etay[,tempid1], Y[ty==1], col=GAMMA[tempid1]+1, cex=1)
+plot(etay[,tempid2], Y[ty==1], col=GAMMA[tempid2]+1, cex=1)
+plot(etay[,tempid3], Y[ty==1], col=GAMMA[tempid3]+1, cex=1)
 
 par(mfrow=c(2,2))
 plot(1:Ty, BETA[,1])
