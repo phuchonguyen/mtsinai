@@ -36,7 +36,7 @@ MySampler <- function(data, niter=5000, nburn=2000, nthin=1,
     alpha = array(NA, dim = c(nout, Ty)),
     #beta_int = array(NA, dim = c(nout, K*Tx)),
     gamma = array(NA, dim = c(nout, K*Tx)),
-    pi_gamma = array(NA, dim = c(nout, K*Tx)),
+    pi_gamma = array(NA, dim = c(nout, 1)),
     sigmay = array(NA, dim = c(nout, Ty)),
     sigmab = array(NA, dim = c(nout, K*Tx))
   )

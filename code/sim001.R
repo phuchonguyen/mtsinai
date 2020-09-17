@@ -236,11 +236,8 @@ print("Simulated Y")
 
 
 ### Running my sampler for Y + X
-source(file.path(getwd(), "code/MyModel/Sampler.R"))
-
-
 data <- list(
-  X=X, Y=Y, 
+  X=X, Y=Y,
   ty=ty, idy=idy,
   tx=tx, idx=idx,
   tau=TAU, kappa=KAPPA,
@@ -255,51 +252,8 @@ samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
-     file=file.path(getwd(),"code/samples/lintruth_010.RData"))
-saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_010.RDS"))
+     file=file.path(getwd(),"code/samples/lintruth_011.RData"))
+saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_011.RDS"))
 print("Done")
 
-
-### For Y only
-source(file.path(getwd(), "code/SelectModel/Sampler.R"))
-
-
-data <- list(
-  X=etay, Y=Y, 
-  ty=ty, idy=idy,
-  K=K
-)
-
-niter=5000
-nburn=3000
-nthin=2
-print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
-samples <- SelectSampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(niter, Ty, idy, ty, X, M,
-     Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
-     file=file.path(getwd(),"code/samples/selecttruth_003.RData"))
-saveRDS(samples, file=file.path(getwd(), "code/samples/selectsamples_003.RDS"))
-
-
-
-### For X only
-source(file.path(getwd(), "code/CovarModel/CovarModel.R"))
-
-
-data <- list(
-  X=X,
-  tx=tx, idx=idx,
-  tau=TAU, kappa=KAPPA,
-  K=K, L=L
-)
-niter=5000
-nburn=3000
-nthin=2
-print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
-samples <- CovarSampler(data, niter=niter, nburn=nburn, nthin=nthin)
-save(niter, truemu, trueSigma,
-     KAPPA, TAU, Tx, idx, tx, X, M,
-     SIGMA_X0,
-     file=file.path(getwd(),"code/samples/covarXtruth_003.RData"))
-saveRDS(samples, file=file.path(getwd(), "code/samples/covarXtruth_003.RDS"))
 
