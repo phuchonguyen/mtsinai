@@ -4,6 +4,7 @@
 #'   pdf_document:
 #'     keep_tex: true
 #' ---
+source(file.path(getwd(), "code/MyModel/Sampler.R"))
 # TODO: By the model notation: N is number of cases, S is N*Tx
 # TODO: Use function to_etai_reg in helpers.R 
 
