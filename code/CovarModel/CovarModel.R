@@ -7,7 +7,7 @@ library("dplyr")
 library(mvtnorm)
 library(fields)
 
-MySampler <- function(data, niter=5000, nburn=2000, nthin=1,
+CovarSampler <- function(data, niter=5000, nburn=2000, nthin=1,
                       verbose=T) {
   initials <- init_params(data$X, data$Y, 
                         data$ty, data$idy,

@@ -14,8 +14,10 @@ s_eta <- function(prm, cst, args=NULL) {
     
     if (log(runif(1)) < logr) {
       eta <- eta_star
-      #TODO: save acceptance prob
+      prm[["eta_naccept"]] <- prm[["eta_naccept"]] + 1
     }
+    
+    prm[["eta_npro"]] <- prm[["eta_npro"]] + 1
   }
     
   prm[["eta"]] <- eta

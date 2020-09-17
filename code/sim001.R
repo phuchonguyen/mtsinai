@@ -4,8 +4,7 @@
 #'   pdf_document:
 #'     keep_tex: true
 #' ---
-print(getwd())
-source("/work/phn5/mtsinai/mtsinai/code/MyModel/Sampler.R")
+
 # TODO: By the model notation: N is number of cases, S is N*Tx
 # TODO: Use function to_etai_reg in helpers.R 
 
@@ -235,7 +234,10 @@ abline(h=BETA[1, tempid3], col="red")
 print("Simulated Y")
 
 
-#' ### Running my sampler
+### Running my sampler for Y + X
+source(file.path(getwd(), "code/MyModel/Sampler.R"))
+
+
 data <- list(
   X=X, Y=Y, 
   ty=ty, idy=idy,
@@ -244,14 +246,59 @@ data <- list(
   K=K, L=L
 )
 
-niter=10000
-nburn=5000
-nthin=5
+niter=5000
+nburn=3000
+nthin=2
 print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
-     file=file.path(getwd(),"code/samples/lintruth_009.RData"))
-saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_009.RDS"))
+     file=file.path(getwd(),"code/samples/lintruth_010.RData"))
+saveRDS(samples, file=file.path(getwd(), "code/samples/linsamples_010.RDS"))
 print("Done")
+
+
+### For Y only
+source(file.path(getwd(), "code/SelectModel/Sampler.R"))
+
+
+data <- list(
+  X=etay, Y=Y, 
+  ty=ty, idy=idy,
+  K=K
+)
+
+niter=5000
+nburn=3000
+nthin=2
+print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
+samples <- SelectSampler(data, niter=niter, nburn=nburn, nthin=nthin)
+save(niter, Ty, idy, ty, X, M,
+     Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
+     file=file.path(getwd(),"code/samples/selecttruth_003.RData"))
+saveRDS(samples, file=file.path(getwd(), "code/samples/selectsamples_003.RDS"))
+
+
+
+### For X only
+source(file.path(getwd(), "code/CovarModel/CovarModel.R"))
+
+
+data <- list(
+  X=X,
+  tx=tx, idx=idx,
+  tau=TAU, kappa=KAPPA,
+  K=K, L=L
+)
+niter=5000
+nburn=3000
+nthin=2
+print(paste0("Sampling with niter=", niter, "nburn=", nburn, "nthin=", nthin))
+samples <- CovarSampler(data, niter=niter, nburn=nburn, nthin=nthin)
+save(niter, truemu, trueSigma,
+     KAPPA, TAU, Tx, idx, tx, X, M,
+     SIGMA_X0,
+     file=file.path(getwd(),"code/samples/covarXtruth_003.RData"))
+saveRDS(samples, file=file.path(getwd(), "code/samples/covarXtruth_003.RDS"))
+

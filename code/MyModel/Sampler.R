@@ -91,6 +91,8 @@ MySampler <- function(data, niter=5000, nburn=2000, nthin=1,
     }
   }
   
+  out[["eta_ar"]] <- prm$eta_naccept/prm$eta_npro
+  
   return(out)
 }
 
