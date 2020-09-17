@@ -78,6 +78,8 @@ init_params <- function(X, Y,
     kappa = kappa,  # bandwidth parameter for psi (and xi??)
     tau = tau,      # scale param for psi and xi ???
     eta = eta,
+    eta_naccept = 0,
+    eta_npro = 0,
     Kinv = Kinv,    # TODO: update if kappa and tau are updated.
     phi = phi,
     delta = delta
