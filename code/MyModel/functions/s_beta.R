@@ -2,10 +2,11 @@ s_gamma_beta <- function(prm, cst) {
   gamma <- prm$gamma
   beta <- prm$beta
   sigmab <- prm$sigmab
+  pi_gamma <- prm$pi_gamma
   etay <- transform_etay(prm$eta, cst$idx, cst$Tx)
   Syi <- diag(1/prm$sigmay[cst$ty])
   Sy <- diag(prm$sigmay[cst$ty])
-  pi_gamma <- rep(NA, length(gamma))
+  #TODO: Maybe save pj0
   
   p <- length(gamma)
   for (j in 1:p) {
@@ -19,9 +20,8 @@ s_gamma_beta <- function(prm, cst) {
     rj1 <- -0.5*log(cst$Vdet) + 0.5*log(Vbd) - 0.5*cst$Ty*log(sigmab[j]) +
       0.5*t(mj)%*%Vb%*%mj
     rj1 <- as.numeric(rj1)
-    pj0 <- cst$pi_gamma0/(cst$pi_gamma0 + (1-cst$pi_gamma0)*exp(rj1))
+    pj0 <- pi_gamma/(pi_gamma + (1-pi_gamma)*exp(rj1))
     gamma[j] <- 1*(runif(1) > pj0)
-    pi_gamma[j] <- pj0
     
     if (gamma[j] == 1) {
       # Sample beta_j
@@ -39,10 +39,12 @@ s_gamma_beta <- function(prm, cst) {
     }
   }
   
+  pi_gamma <- rbeta(1, 1+sum(gamma==0), 1+sum(gamma))
+  
   prm[["gamma"]] <- gamma
   prm[["beta"]] <- beta
   #prm[["beta_int"]] <- beta_int
-  prm[["pi_gamma"]] <- pi_gamma  # Probability that it's 0
+  prm[["pi_gamma"]] <- pi_gamma  # Probability that gammaj is 0
   prm[["sigmab"]] <- sigmab
   return(prm)
 }
