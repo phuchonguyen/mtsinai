@@ -5,7 +5,8 @@ s_eta <- function(prm, cst, args=NULL) {
     # Propose eta
     #TODO: Code up HMC, for now use MH
     eta_star <- eta
-    eta_star[i,] <- rcpp_rmvnorm(1, mu=prm$psi[i,], S=diag(1, cst$K))  # proposes from the sampling model of X
+    #eta_star[i,] <- rcpp_rmvnorm(1, mu=prm$psi[i,], S=diag(1, cst$K))  # proposes from the sampling model of X
+    eta_star[i,] <- rcpp_rmvnorm(1, mu=eta[i,], S=diag(1, cst$K))
     
     # Accept/Reject proposal  
     eta_l <- eta_loglike(i, eta, prm, cst)
@@ -40,7 +41,8 @@ eta_loglike <- function(i, eta, prm, cst) {
   Sxi <- diag(1/prm$sigmax)
   X_loglike <- -0.5*t(mux)%*%Sxi%*%mux
   
-  eta_loglike <- 0 # Since proposes from this #-0.5*t(prm$psi[i,]-eta[i,])%*%(prm$psi[i,]-eta[i,])
+  #eta_loglike <- 0 # Since proposes from this
+  eta_loglike <- -0.5*t(prm$psi[i,]-eta[i,])%*%(prm$psi[i,]-eta[i,])
   
   return((Y_loglike + X_loglike + eta_loglike))
 }
