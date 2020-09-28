@@ -143,17 +143,17 @@ data <- list(
   K=K, L=L
 )
 
-niter=50000
-nburn=30000
-nthin=5
+niter=5#0000
+nburn=3#0000
+nthin=1
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
 filename <- "lintruth_012"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
-     file=file.path(paste0("/samples/", filename,".RData")))
-saveRDS(samples, file=file.path(paste0("/samples/", filename,".RDS")))
+     file=file.path(paste0("samples/", filename,".RData")))
+saveRDS(samples, file=file.path(paste0("samples/", filename,".RDS")))
 print(paste0("Done, saved in file ", filename))
 
 
