@@ -1,4 +1,4 @@
-source(file.path(getwd(), "code/MyModel/Sampler.R"))
+source(file.path(getwd(), "MyModel/Sampler.R"))
 
 # Constants
 SEED <- 123
@@ -129,7 +129,6 @@ etay <- transform_etay(eta, idx, Tx)
 Y <- rep(NA, Ty*M)
 for (t in 1:Ty) {
   Y[ty==t] <- ALPHA[t] + etay%*%BETA[t,] + rnorm(sum(ty==t), 0, sqrt(SIGMA_Y[t]))
-  print(var(Y[ty==t]))
 }
 
 print("Simulated Y")
@@ -153,8 +152,8 @@ filename <- "lintruth_012"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
-     file=file.path(getwd(), paste0("code/samples/", filename,".RData")))
-saveRDS(samples, file=file.path(getwd(), paste0("code/samples/", filename,".RDS")))
+     file=file.path(getwd(), paste0("samples/", filename,".RData")))
+saveRDS(samples, file=file.path(getwd(), paste0("samples/", filename,".RDS")))
 print(paste0("Done, saved in file ", filename))
 
 
