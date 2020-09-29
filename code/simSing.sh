@@ -6,4 +6,4 @@
 #SBATCH -p herringlab,statdept-low,volfovskylab-low
 
 singularity exec --bind /hpc/home/phn5/mtsinai/code/samples mtsinai.sif ls samples
-singularity exec mtsinai.sif Rscript simSing.R
+singularity run mtsinai.sif simSing.R
