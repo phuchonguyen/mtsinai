@@ -1,3 +1,5 @@
+.libPaths(c("/usr/local/lib/R/site-library", .libPaths()))
+print(.libPaths())
 source(file.path(getwd(), "MyModel/Sampler.R"))
 
 # Constants
