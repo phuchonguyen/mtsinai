@@ -1,5 +1,4 @@
 .libPaths(c("/usr/local/lib/R/site-library", .libPaths()))
-print(.libPaths())
 source(file.path(getwd(), "MyModel/Sampler.R"))
 
 # Constants
@@ -145,9 +144,9 @@ data <- list(
   K=K, L=L
 )
 
-niter=5#0000
-nburn=3#0000
-nthin=1
+niter=50000
+nburn=30000
+nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
 samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
 filename <- "lintruth_012"
