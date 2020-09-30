@@ -148,7 +148,7 @@ niter=50000
 nburn=30000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
-samples <- MySampler(data, niter=niter, nburn=nburn, nthin=nthin)
+samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
 filename <- "lintruth_012"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
