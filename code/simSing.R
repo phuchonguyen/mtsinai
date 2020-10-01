@@ -50,7 +50,7 @@ mu_sine <- function(v, args=NULL) {
 
 #+ cache=TRUE
 P <- 10
-K <- 2
+K <- 1
 L <- 3
 Tx <- 10
 M <- 50     # Number of subjects
@@ -79,11 +79,10 @@ for (j in 1:P) {
 
 
 # Generate Psi
-truepsi <- cbind(rgp(1, 1:Tx, mu_zero, KAPPA, TAU),
-                 rgp(1, 1:Tx, mu_zero, KAPPA, TAU))
-plot(truepsi[,1], type="l", col=3, ylim=c(min(truepsi), max(truepsi)))
-lines(truepsi[,2], type="l", col=2)
-
+truepsi <- array(NA, dim = c(Tx, K))
+for (i in 1:K) {
+  truepsi[,i] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
+}
 
 # Generate Xi
 truexi <- array(NA, dim = c(Tx, L, K))
@@ -95,8 +94,8 @@ for (k in 1:K) {
 
 
 # Generate eta
-psi <- t(sapply(tx, function(t) truepsi[t,]))
-eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
+psi <- matrix(sapply(tx, function(t) truepsi[t,]), M*Tx, K)
+eta <- matrix(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)), M*Tx, K)
 
 
 # Calculate Mu & Sigma
@@ -144,12 +143,12 @@ data <- list(
   K=K, L=L
 )
 
-niter=50000
-nburn=30000
+niter=20000
+nburn=10000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
 samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
-filename <- "lintruth_012"
+filename <- "lintruth_015"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,

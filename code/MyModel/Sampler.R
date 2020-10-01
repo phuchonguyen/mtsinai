@@ -163,13 +163,15 @@ MySampler002 <- function(data, niter=5000, nburn=2000, nthin=1,
     # Update step_size for s_eta
     if (i%%100==0 & i<=nburn) {
       acp_mean = mean(prm$acp)/100
-      if(acp_mean > 0.3){
+      if(acp_mean > 0.3) {
         mh_delta = mh_delta*2
-      }else if(acp_mean < 0.2){
-        mh_delta = mh_delta*2/3}
+        print(paste("Updated mh_delta: ", mh_delta))
+      } else if(acp_mean < 0.2) {
+        mh_delta = mh_delta*2/3
+        print(paste("Updated mh_delta: ", mh_delta))
+        }
       prm[["acp"]] = rep(0, nrow(prm$eta))
       print(paste("Mean acp: ", acp_mean))
-      print(paste("Updated mh_delta: ", mh_delta))
     }
     
     
