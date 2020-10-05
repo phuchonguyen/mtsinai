@@ -116,7 +116,7 @@ Ty <- 1
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
 SIGMA_Y <- sort(1/rgamma(Ty, 10, 1)) 
-GAMMA <- (runif(K*Tx) <= 0.3)*1
+GAMMA <- 1 # (runif(K*Tx) <= 0.3)*1
 SIGMA_B <- 1/rgamma(K*Tx, 5, 1)
 BETA <- array(NA, dim = c(Ty, K*Tx))
 BETA[1,] <- rnorm(K*Tx, mean = rep(1, K*Tx), sd = sqrt(SIGMA_B)) * GAMMA
