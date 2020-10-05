@@ -52,7 +52,7 @@ mu_sine <- function(v, args=NULL) {
 P <- 10
 K <- 1
 L <- 3
-Tx <- 10
+Tx <- 1
 M <- 50     # Number of subjects
 KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
@@ -112,7 +112,7 @@ X <- t(sapply(tx, function(t)  mvtnorm::rmvnorm(1, mean=truemu[t,], sigma=trueSi
 print("Simulated X")
 
 # Each row i is set of coefs for Ty=i for all factors at all time Tx
-Ty <- 5
+Ty <- 1
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
 SIGMA_Y <- sort(1/rgamma(Ty, 10, 1)) 
@@ -147,8 +147,8 @@ niter=20000
 nburn=10000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
-samples <- MySampler004(data, eta=eta, niter=niter, nburn=nburn, nthin=nthin)
-filename <- "lintruth_017"
+samples <- MySampler002(data, eta=eta, niter=niter, nburn=nburn, nthin=nthin)
+filename <- "Tx1Ty1K1_RegYX"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,

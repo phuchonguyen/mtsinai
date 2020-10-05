@@ -95,6 +95,7 @@ MySampler <- function(data, niter=5000, nburn=2000, nthin=1,
 }
 
 
+# Update MH for eta with adjusted step size
 MySampler002 <- function(data, niter=5000, nburn=2000, nthin=1,
                       verbose=T) {
   initials <- init_params(data$X, data$Y, 
@@ -199,6 +200,7 @@ MySampler002 <- function(data, niter=5000, nburn=2000, nthin=1,
   return(out)
 }
 
+# Sample eta from X not X+Y
 MySampler003 <- function(data, niter=5000, nburn=2000, nthin=1,
                          verbose=T) {
   initials <- init_params(data$X, data$Y, 
@@ -288,6 +290,8 @@ MySampler003 <- function(data, niter=5000, nburn=2000, nthin=1,
   return(out)
 }
 
+
+# Regrssion on Y only, given eta
 MySampler004 <- function(data, eta, niter=5000, nburn=2000, nthin=1,
                          verbose=T) {
   initials <- init_params(data$X, data$Y, 
