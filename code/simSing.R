@@ -120,8 +120,10 @@ GAMMA <- (runif(K*Tx) <= 0.3)*1
 SIGMA_B <- 1/rgamma(K*Tx, 5, 1)
 BETA <- array(NA, dim = c(Ty, K*Tx))
 BETA[1,] <- rnorm(K*Tx, mean = rep(1, K*Tx), sd = sqrt(SIGMA_B)) * GAMMA
-for (t in 2:Ty) {
-  BETA[t,] <- rnorm(K*Tx, mean = BETA[t-1,], sd = sqrt(SIGMA_B)) * GAMMA
+if (Ty > 1) {
+  for (t in 2:Ty) {
+    BETA[t,] <- rnorm(K*Tx, mean = BETA[t-1,], sd = sqrt(SIGMA_B)) * GAMMA
+  }
 }
 ALPHA <- rnorm(Ty)
 # TODO add Interactions
@@ -147,7 +149,7 @@ niter=20000
 nburn=10000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
-samples <- MySampler002(data, eta=eta, niter=niter, nburn=nburn, nthin=nthin)
+samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
 filename <- "Tx1Ty1K1_RegYX"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
