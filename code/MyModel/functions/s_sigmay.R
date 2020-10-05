@@ -7,7 +7,8 @@ s_sigmay = function(prm, cst) {
     Yt <- cst$Y[cst$ty==t]
     idyt <- cst$idy[cst$ty==t]
     etayt <- transform_etay(prm$eta, cst$idx, cst$Tx)[idyt,]
-    muy <- Yt - etayt%*%prm$beta[t,]
+    # TODO matrix(...) is hacky to make %*% work when used with scalar
+    muy <- Yt - etayt%*%matrix(prm$beta[t,], ncol(prm$beta), 1)
     
     # Sample intercept alpha ~ N(0,10)
     s <- 1/(n/sigmay[t] + 1/10)   

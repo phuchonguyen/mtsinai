@@ -9,10 +9,10 @@ se_cov <- function(x, sigma, kappa) {
   p <- ncol(as.matrix(x))
   if (p==1) {
     x <- as.vector(x)
-    perturb <- diag(rep(1e-10, length(x)))
+    perturb <- diag(rep(1e-10, length(x)), length(x), length(x))
     return(outer(x, x, function(a, b) sigma^2*exp(-1/kappa*(a-b)^2)) + perturb)
   }
-  perturb <- diag(rep(1e-10, nrow(x)))
+  perturb <- diag(rep(1e-10, nrow(x)), nrow(x), nrow(x))
   if (length(kappa) < p) kappa <- rep(kappa, ncol(x))
   x <- sweep(x, 2, sqrt(1/kappa), "*")
   K <- sigma^2*fields::Exp.cov(x, theta=1, p=2) # p=2 is Squared Exponential Function
@@ -59,6 +59,9 @@ get_muy <- function(params, const, eta=NULL, j=NULL) {
 transform_etay <- function(eta, idx, Tx) {
   uidx <- sort(unique(idx))
   etay <- t(sapply(uidx, function(i) as.vector(t(eta[idx==i,]))))
+  if(nrow(etay)==(Tx*ncol(eta))) {
+    etay <- t(etay)
+  }
   eta_names <- sapply(1:ncol(eta), function(k) paste("eta", k, sep=""))
   etay_names <- as.vector(t(sapply(1:Tx, function(t) paste(eta_names, t, sep="_"))))
   colnames(etay) <- etay_names
