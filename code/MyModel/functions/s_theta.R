@@ -10,7 +10,8 @@ s_theta <- function(prm, cst, args=NULL) {
   n <- nrow(X)
   p <- ncol(X)
   tau <- get_factor_tau(delta)
-  etatilda <- t(sapply(1:n, function(i) xi[i,,]%*%eta[i,]))
+  # TODO: quick fix by converting eta[i,] to matrix(eta[i,],...)
+  etatilda <- t(sapply(1:n, function(i) xi[i,,]%*% matrix(eta[i,], 1, ncol(eta))))
   ete <- t(etatilda)%*%etatilda
   for (j in 1:p) {
     Stilda <- 1/sigmax[j]*ete + diag(phi[j,]*tau)
