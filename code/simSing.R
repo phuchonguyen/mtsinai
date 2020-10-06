@@ -77,7 +77,6 @@ for (j in 1:P) {
   }
 }
 
-
 # Generate Psi
 truepsi <- array(NA, dim = c(Tx, K))
 for (i in 1:K) {
@@ -92,12 +91,6 @@ for (k in 1:K) {
   }
 }
 
-
-# Generate eta
-psi <- matrix(sapply(tx, function(t) truepsi[t,]), M*Tx, K)
-eta <- matrix(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)), M*Tx, K)
-
-
 # Calculate Mu & Sigma
 truemu <- array(NA, dim = c(Tx, P))
 trueSigma <- array(NA, dim = c(Tx, P, P))
@@ -108,7 +101,15 @@ for (t in 1:Tx) {
 }
 
 #' ### Generate X from the truth
-X <- t(sapply(tx, function(t)  mvtnorm::rmvnorm(1, mean=truemu[t,], sigma=trueSigma[t,,])))
+# TODO: Why they differnt???? F
+# Generate eta
+psi <- t(sapply(tx, function(t) truepsi[t,]))
+if (K == 1) {psi <- t(psi)}
+eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
+if (K == 1) {eta <- t(eta)}
+#X <- t(sapply(tx, function(t)  mvtnorm::rmvnorm(1, mean=truemu[t,], sigma=trueSigma[t,,])))
+X <- t(sapply(1:nrow(eta), function(i) mvtnorm::rmvnorm(1, mean=Theta%*%truexi[tx[i],,]%*%eta[i,],
+                                                       sigma=SIGMA_X0)))
 print("Simulated X")
 
 # Each row i is set of coefs for Ty=i for all factors at all time Tx
@@ -135,7 +136,6 @@ for (t in 1:Ty) {
 
 print("Simulated Y")
 
-
 ### Running my sampler for Y + X
 data <- list(
   X=X, Y=Y,
@@ -149,8 +149,8 @@ niter=20000
 nburn=10000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
-samples <- MySamplerNOGAMMA(data, niter=niter, nburn=nburn, nthin=nthin)
-filename <- "Tx1Ty1K1_RegYX_NoGamma"
+samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
+filename <- "Tx1Ty1K1_RegYX"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
