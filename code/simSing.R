@@ -52,7 +52,7 @@ mu_sine <- function(v, args=NULL) {
 P <- 10
 K <- 1
 L <- 3
-Tx <- 2
+Tx <- 1
 M <- 50     # Number of subjects
 KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
@@ -113,7 +113,7 @@ X <- t(sapply(1:nrow(eta), function(i) mvtnorm::rmvnorm(1, mean=Theta%*%truexi[t
 print("Simulated X")
 
 # Each row i is set of coefs for Ty=i for all factors at all time Tx
-Ty <- 1
+Ty <- 2
 ty <- rep(1:Ty, each=M)
 idy <- rep(1:M, Ty)
 SIGMA_Y <- sort(1/rgamma(Ty, 10, 1)) 
@@ -150,7 +150,7 @@ nburn=20000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
 samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
-filename <- "Tx2Ty1K1_RegYX"
+filename <- "Tx1Ty2K1_RegYX"
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
