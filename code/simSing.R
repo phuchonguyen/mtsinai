@@ -145,13 +145,14 @@ data <- list(
   K=K, L=L
 )
 
-niter=30000
-nburn=20000
+niter=20000
+nburn=10000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
 samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
-filename <- "Tx1Ty2K1_RegYX"
+filename <- paste0("Tx",Tx, "Ty", Ty, "K", K, "_RegYX")
 save(niter, truemu, trueSigma, SXA, SXB, SIGMA_X0,
+     eta, psi, Theta, xi,
      KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
      Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
      file=file.path(paste0("samples/", filename,".RData")))
