@@ -38,6 +38,7 @@ eta_loglike002 <- function(i, eta, prm, cst) {
     tj <- cst$ty[j]
     muy <- t(etay)%*%prm$beta[tj,]
     res <- -0.5*(muy^2 - 2*muy*cst$Y[j])/prm$sigmay[tj]
+    return(res)
   })
   Y_loglike <- sum(unlist(Y_loglike))
   
@@ -45,7 +46,7 @@ eta_loglike002 <- function(i, eta, prm, cst) {
   etai <- eta[i,]
   Lambda <- prm$theta%*%prm$xi[i,,]
   LambdaS <- t(Lambda)%*%diag(1/prm$sigmax)
-  X_loglike <- -0.5*(t(etai)%*%(LambdaS%*%Lambda + diag(1, cst$K))%*%etai 
+  X_loglike <- -0.5*(t(etai)%*%(LambdaS%*%Lambda + diag(1, cst$K))%*%etai
                      -2*t(etai)%*%(LambdaS%*%cst$X[i,] + prm$psi[i,]))
   
   return((Y_loglike + X_loglike))
