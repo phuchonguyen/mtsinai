@@ -52,7 +52,7 @@ mu_sine <- function(v, args=NULL) {
 P <- 10
 K <- 1
 L <- 3
-Tx <- 1
+Tx <- 5
 M <- 50     # Number of subjects
 KAPPA <- 100 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
@@ -145,8 +145,8 @@ data <- list(
   K=K, L=L
 )
 
-niter=20000
-nburn=10000
+niter=30000
+nburn=20000
 nthin=5
 print(paste0("Sampling with niter = ", niter, " nburn = ", nburn, " nthin = ", nthin))
 samples <- MySampler002(data, niter=niter, nburn=nburn, nthin=nthin)
