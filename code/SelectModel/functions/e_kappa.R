@@ -1,1 +1,0 @@
-# Use empirical Bayes to estimate kappa

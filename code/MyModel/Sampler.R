@@ -79,13 +79,13 @@ MySampler <- function(data, niter=5000, nburn=2000, nthin=1,
       acp_mean = mean(prm$acp)/100
       if(acp_mean > 0.3) {
         mh_delta = mh_delta*2
-        print(paste("Updated mh_delta: ", mh_delta))
+        #print(paste("Updated mh_delta: ", mh_delta))
       } else if(acp_mean < 0.2) {
         mh_delta = mh_delta*2/3
-        print(paste("Updated mh_delta: ", mh_delta))
+        #print(paste("Updated mh_delta: ", mh_delta))
         }
       prm[["acp"]] = rep(0, nrow(prm$eta))
-      print(paste("Mean acp: ", acp_mean))
+      #print(paste("Mean acp: ", acp_mean))
     }
     
     
@@ -116,7 +116,7 @@ MySampler <- function(data, niter=5000, nburn=2000, nthin=1,
 
 # Regrssion on Y only, given eta
 MySamplerNoGamma <- function(data, eta, niter=5000, nburn=2000, nthin=1,
-                         verbose=T, ) {
+                         verbose=T) {
   initials <- init_params(data$X, data$Y, 
                           data$ty, data$idy,
                           data$tx, data$idx,
@@ -162,7 +162,6 @@ MySamplerNoGamma <- function(data, eta, niter=5000, nburn=2000, nthin=1,
     
     # Covariance regression
     prm <- s_xi(prm, cst)  # time elapsed for 10^2 iters: 50.812 *
-    # NOTE: samples eta in psi without dependence on Y
     prm <- s_psi(prm, cst)  # time elapsed for 10^2 iters: 26.589 *
     prm <- s_theta(prm, cst)  # time elapsed for 10^2 iters: 0.449 
     prm <- s_sigmax(prm, cst)  # time elapsed for 10^2 iters: 5.878
@@ -178,7 +177,7 @@ MySamplerNoGamma <- function(data, eta, niter=5000, nburn=2000, nthin=1,
     # }
     # print(proc.time()-s)
     
-    #TODO: Implement covariates 
+    #TODO: Implement covariates Z
     #prm <- update_gamma_beta_z(prm, cst)
     
     # Update step_size for s_eta
@@ -186,14 +185,15 @@ MySamplerNoGamma <- function(data, eta, niter=5000, nburn=2000, nthin=1,
       acp_mean = mean(prm$acp)/100
       if(acp_mean > 0.3) {
         mh_delta = mh_delta*2
-        print(paste("Updated mh_delta: ", mh_delta))
+        #print(paste("Updated mh_delta: ", mh_delta))
       } else if(acp_mean < 0.2) {
         mh_delta = mh_delta*2/3
-        print(paste("Updated mh_delta: ", mh_delta))
+        #print(paste("Updated mh_delta: ", mh_delta))
       }
       prm[["acp"]] = rep(0, nrow(prm$eta))
-      print(paste("Mean acp: ", acp_mean))
+     # print(paste("Mean acp: ", acp_mean))
     }
+    
     
     if (i>nburn & i%%nthin==0) {  # TODO: Is this a good way to thin????
       out$eta[j,,] <- prm$eta
