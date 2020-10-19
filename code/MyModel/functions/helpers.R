@@ -41,11 +41,11 @@ get_muy <- function(params, const, eta=NULL, j=NULL) {
   etay <- transform_etay(eta, const$idx, const$Tx)
   #etay_int <- etay^2
   if (is.null(j)) {
-    muy <- sapply(1:length(Y), function(i) {
+    muy <- sapply(1:length(const$Y), function(i) {
       const$Y[i] - t(etay[const$idy[i],])%*%(params$beta[const$ty[i], ]) - params$alpha[const$ty[i]]
     }) 
   } else {
-    muy <- sapply(1:length(Y), function(i) {
+    muy <- sapply(1:length(const$Y), function(i) {
       const$Y[i] - t(etay[const$idy[i],-j])%*%(params$beta[const$ty[i], -j]) - params$alpha[const$ty[i]]
     })
   }

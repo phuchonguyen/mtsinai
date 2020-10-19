@@ -161,7 +161,7 @@ sim_001 <- function(Tx=1, Ty=1, K=1, gamma=TRUE, gamma.prob=0.5,
        eta, truepsi, Theta, truexi,
        KAPPA, TAU, Tx, Ty, idx, tx, idy, ty, X, M,
        Y, BETA, GAMMA, SIGMA_B, SIGMA_Y, ALPHA,
-       file=file.path(paste0("samples/k", K, "/", filename,".RData")))
-  saveRDS(samples, file=file.path(paste0("samples/k", K, "/", filename,".RDS")))
+       file=file.path(paste0("samples/", filename,".RData")))
+  saveRDS(samples, file=file.path(paste0("samples/", filename,".RDS")))
   print(paste0("Done, saved in file ", filename))
 }
