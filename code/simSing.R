@@ -31,8 +31,13 @@ idx <- rep(1:M, each=Tx)
 #truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
 # ------------Option 2: more sparse Theta----------------
 truedelta <- c(rgamma(1, 2, 1), rgamma(1, 3, 1), rgamma(L-2, 10, 1))
-aphi <- c(rep(1,floor(P/2)), rep(3, P-floor(P/2)))
-bphi <- c(rep(3,floor(P/2)), rep(1, P-floor(P/2)))
+aphi <- bphi <- matrix(3, P, L)
+for (l in 1:L) {
+  s <- 1+(l-1)*ceiling(P/L)
+  e <- min(P, l*ceiling(P/L))
+  aphi[s:e, l] <- 1
+  aphi[-(s:e), l] <- 6
+}
 truephi <- t(matrix(sapply(1:P, function(i) rgamma(L, aphi[i]/2, bphi[i]/2)), L, P))
 truetau <- get_factor_tau(truedelta)
 Theta <- array(NA, dim = c(P, L))
