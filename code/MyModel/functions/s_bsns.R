@@ -2,7 +2,7 @@
 # TODO: add option to select groups by factor or exposure time
 s_Bsns <- function(prm, cst, prior="laplace") {
   Y    <- cst$Y
-  etay <- cst$X
+  etay <- transform_etay(prm$eta, cst$idx, cst$Tx) # cst$X  
   q    <- cst$q
   B    <- prm$B
   nu   <- prm$nu

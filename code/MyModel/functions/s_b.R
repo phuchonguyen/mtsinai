@@ -3,7 +3,7 @@ s_B <- function(prm, cst) {
   prm <- s_zeta_nu(prm, cst)
   
   Y <- cst$Y
-  etay <- cst$X  # TODO: change to prm$eta
+  etay <- transform_etay(prm$eta, cst$idx, cst$Tx) # cst$X  
   ete <- t(etay)%*%etay
   Dinv <- diag(1/prm$nu)
   U <- chol2inv(chol(ete + Dinv))

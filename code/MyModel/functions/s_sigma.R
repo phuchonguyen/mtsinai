@@ -4,7 +4,7 @@ s_Sigma <- function(prm, cst) {
   prm <- s_l(prm, cst, v, q)
   
   Y <- cst$Y
-  etay <- cst$X  # TODO: replace with eta
+  etay <- transform_etay(prm$eta, cst$idx, cst$Tx) # cst$X  
   n <- cst$N
   p <- sum(prm$gamma)
   B <- prm$B

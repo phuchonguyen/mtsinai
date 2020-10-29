@@ -17,7 +17,7 @@ From: ubuntu:18.04
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
   add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/'
   apt -y install r-base r-base-dev
-  R --slave -e 'install.packages(c("spam", "Matrix", "FastGP", "mvtnorm", "fields", "dplyr"), repos="https://cloud.r-project.org/", destdir="/usr/local/lib/R/site-library")'
+  R --slave -e 'install.packages(c("spam", "Matrix", "FastGP", "mvtnorm", "fields", "dplyr", "MASS", "abind", "MBSP", "GIGrvg", "statmod", "CholWishart"), repos="https://cloud.r-project.org/", destdir="/usr/local/lib/R/site-library")'
   
 
 %runscript

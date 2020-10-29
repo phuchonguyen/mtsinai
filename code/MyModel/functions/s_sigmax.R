@@ -10,9 +10,9 @@ s_sigmax <- function(prm, cst, args=NULL) {
   n <- nrow(X)
   sigmax <- rep(NA, p)
   for (j in 1:p) {
-    a <- a0 + n
-    b <- b0 + sum(sapply(1:n, function(i) (X[i,j] - t(theta[j,])%*%xi[i,,]%*%eta[i,])^2))  # TODO: Optimize
-    sigmax[j] <- 1/rgamma(1, 0.5*a, 0.5*b)
+    a <- a0 + n*0.5
+    b <- b0 + 0.5*sum(sapply(1:n, function(i) (X[i,j] - t(theta[j,])%*%xi[i,,]%*%eta[i,])^2))  # TODO: Optimize
+    sigmax[j] <- 1/rgamma(1, a, b)
   }
   
   prm[["sigmax"]] <- sigmax

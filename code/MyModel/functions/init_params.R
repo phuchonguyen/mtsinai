@@ -6,8 +6,13 @@ init_params <- function(X, Y,
                         ty, idy,
                         tx, idx, # for GP covariance of Y model
                         tau, kappa,  # TODO: estimate these
-                        K, L  # TODO: Allow this to vary
-                        ) {
+                        K, L) {
+  
+  # Scale time to be in interval [0, 1]
+  if (scale.t) {
+    ty <- (ty - min(ty))/(max(ty) - min(ty))
+    tx <- (tx - min(tx))/(max(tx) - min(tx))
+  }
   
   # Y = c(Y_1,...,Y_Ty), Y_1 = c(y_11,...,y_1n)
   temp <- data.frame(cbind(Y, idy, ty)) %>%

@@ -56,9 +56,12 @@ get_muy <- function(params, const, eta=NULL, j=NULL) {
 
 # Returns: a (n x KTx) matrix with vectorized exposures of all time for each individual
 # So each individual has one row, sorted by increasing ID
+# TODO: maybe stack columns instead of stacking rows like this???
 transform_etay <- function(eta, idx, Tx) {
+  stopifnot(is.matrix(eta))
   uidx <- sort(unique(idx))
   etay <- t(sapply(uidx, function(i) as.vector(t(eta[idx==i,]))))
+  # If eta is nx1, etay above is returned as 1xn 
   if(nrow(etay)==(Tx*ncol(eta))) {
     etay <- t(etay)
   }
