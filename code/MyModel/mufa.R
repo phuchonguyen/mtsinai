@@ -115,12 +115,12 @@ Mufa <- function(niter, data, nthin=1, nburn=10,
     prm <- s_Sigma(prm, cst)
     
     # Update step_size for s_eta
-    if (i%%100==0 & i<=nburn) {
+    if (i%%50==0 & i<=nburn) {
       acp_mean = mean(prm$acp)/100
-      if(acp_mean > 0.3) {
-        mh_delta = mh_delta*2
+      if(acp_mean > 0.45) {
+        mh_delta = mh_delta + min(0.01, i^(-0.5))
       } else if(acp_mean < 0.2) {
-        mh_delta = mh_delta*2/3
+        mh_delta = mh_delta - min(0.01, i^(-0.5))
       }
       prm[["acp"]] = rep(0, nrow(prm$eta))
     }
