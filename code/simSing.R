@@ -9,7 +9,7 @@ sapply(funcfiles, function(x) source(file.path(funcpath, x)))
 SEED <- 123
 set.seed(SEED)
 
-K <- 2
+K <- 2 
 Tx <- 3
 P <- 10
 L <- 3
@@ -25,20 +25,20 @@ idx <- rep(1:M, each=Tx)
 
 # Generate Theta
 # -----------Option 1 -----------
-# a1 <- a2 <- gtheta <- 10
-#truedelta <- rgamma(1, a1, 1)
-#truedelta <- c(truedelta, rgamma(L-1, a2, 1))
-#truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
+a1 <- a2 <- gtheta <- 10
+truedelta <- rgamma(1, a1, 1)
+truedelta <- c(truedelta, rgamma(L-1, a2, 1))
+truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
 # ------------Option 2: more sparse Theta----------------
-truedelta <- c(rgamma(1, 2, 1), rgamma(1, 3, 1), rgamma(L-2, 10, 1))
-aphi <- bphi <- matrix(3, P, L)
-for (l in 1:L) {
-  s <- 1+(l-1)*ceiling(P/L)
-  e <- min(P, l*ceiling(P/L))
-  aphi[s:e, l] <- 1
-  aphi[-(s:e), l] <- 6
-}
-truephi <- t(matrix(sapply(1:P, function(i) rgamma(L, aphi[i]/2, bphi[i]/2)), L, P))
+#truedelta <- c(rgamma(1, 2, 1), rgamma(1, 3, 1), rgamma(L-2, 10, 1))
+#aphi <- bphi <- matrix(3, P, L)
+#for (l in 1:L) {
+#  s <- 1+(l-1)*ceiling(P/L)
+#  e <- min(P, l*ceiling(P/L))
+#  aphi[s:e, l] <- 1
+#  aphi[-(s:e), l] <- 6
+#}
+#truephi <- t(matrix(sapply(1:P, function(i) rgamma(L, aphi[i]/2, bphi[i]/2)), L, P))
 truetau <- get_factor_tau(truedelta)
 Theta <- array(NA, dim = c(P, L))
 for (j in 1:P) {
@@ -84,7 +84,7 @@ q <- 3   # number of outcomes
 n <- M
 p <- K*Tx
 # Active number of predictors is :
-p.act <- 5
+p.act <- 1
 # Generate true error covariance Sigma Y
 rho <- 0.6
 sigma.sq <- 2
@@ -120,14 +120,14 @@ Y <- crossprod(t(etay),B.true) + E
 
 # Running it for longer improves the estimates.
 data <- list(X=X, tx=tx, idx=idx, K=K, L=L, KAPPA=KAPPA,
-             aphi=aphi, bphi=bphi,
+             #aphi=aphi, bphi=bphi,
              Y=Y)
 s <- Sys.time()
-samps <- Mufa(10, data, nburn = 0, nthin=1)
-saveRDS(samps, paste("samples/test_K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".RDS", sep="_"))
+samps <- Mufa(60000, data, nburn = 20000, nthin=40)
+saveRDS(samps, paste("samples/remote_K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".RDS", sep="_"))
 save(SIGMA_X0, truemu, trueSigma, eta,
      B.true, Sigma, Theta, truepsi, truexi, X, Y,
-     file=paste("samples/test_K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".Rdata", sep="_"))
+     file=paste("samples/remote_K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".Rdata", sep="_"))
 print(Sys.time()-s)
 
 
