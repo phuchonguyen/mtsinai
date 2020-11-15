@@ -45,6 +45,8 @@ Mufa <- function(niter, data, nthin=1, nburn=10, nchain=2,
   #########################################################
   prm <- list()
   for (i in 1:nchain) {
+    prm[[i]] <- list()
+    
     ### For Regression
     Y <- cst$Y
     prm[[i]][["B"]]        <- matrix(rnorm(cst$Kn*cst$q, 0, 10), cst$Kn, cst$q)
@@ -59,7 +61,7 @@ Mufa <- function(niter, data, nthin=1, nburn=10, nchain=2,
     X <- data$X
     nx <- nrow(X); px <- ncol(X)
     L <- cst$L; K <- cst$K
-    prm[[i]][["sigmax"]] <- diag(1/rgamma(px, 2, 1), px)
+    prm[[i]][["sigmax"]] <- 1/rgamma(px, 2, 1)
     prm[[i]][["theta"]]  <- array(rnorm(px*L, 0, 10), dim = c(px, L))  # L 1st eigenvectors as initial conditions
     prm[[i]][["xi"]]     <- array(rnorm(nx * L * K), dim = c(nx, L, K))
     prm[[i]][["psi"]]    <- array(rnorm(nx * K), dim = c(nx, K))
@@ -112,7 +114,6 @@ Mufa <- function(niter, data, nthin=1, nburn=10, nchain=2,
       prm[[c]] <- s_eta(prm[[c]], cst, mh_delta[c])  # time elapsed for 10^2 iters: ?? 
       ### Y Regression ###
       if (method == "shrink") {
-        stopifnot(sum(prm[[c]]$gamma)==cst$Kn)
         prm[[c]] <- s_B(prm[[c]], cst)
       } else if (method == "select") {
         prm[[c]] <- s_Bsns(prm[[c]], cst)
@@ -142,9 +143,9 @@ Mufa <- function(niter, data, nthin=1, nburn=10, nchain=2,
         out[[c]]$B[j,,] <- prm[[c]]$B
         out[[c]]$Sigma[j,,] <- prm[[c]]$Sigma
         
-        j <- j+1
       } 
     }
+    if (i>nburn & i%%nthin==0) {j <- j+1}
   }
   
   return(out)
