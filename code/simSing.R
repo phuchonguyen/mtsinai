@@ -1,7 +1,7 @@
-.libPaths(c("/usr/local/lib/R/site-library", .libPaths()))
-source(file.path(getwd(), "MyModel/mufa.R"))
-source(file.path(getwd(), "sim_func.R"))
-funcpath <- file.path(getwd(), "MyModel/functions")
+#.libPaths(c("/usr/local/lib/R/site-library", .libPaths()))
+source(file.path(getwd(), "code/MyModel/mufa.R"))
+source(file.path(getwd(), "code/sim_func.R"))
+funcpath <- file.path(getwd(), "code/MyModel/functions")
 funcfiles <- list.files(path = funcpath)
 sapply(funcfiles, function(x) source(file.path(funcpath, x)))
 
@@ -9,36 +9,39 @@ sapply(funcfiles, function(x) source(file.path(funcpath, x)))
 SEED <- 123
 set.seed(SEED)
 
-K <- 2 
+# Model parameters
+K <- 2
 Tx <- 3
+Ty <- 3
 P <- 10
 L <- 3
 M <- 100    # Number of subjects
-KAPPA <- 100 # GP bandwidth
+KAPPA <- 10 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
-TAU <- 1    # GP sqrt variance
-SXA <- 2
-SXB <- 0.1
-SIGMA_X0 <- diag(1/rgamma(P, SXA, SXB), P, P)  # Error variance of X
+TAU <- 2   # GP sqrt variance
+SIGMA_X0 <- diag(0.5, P, P)#diag(1/rgamma(P, SXA, SXB), P, P)
+
+# Generate X
+# Generate Psi
+truepsi <- array(NA, dim = c(Tx, K))
+for (i in 1:K) {
+  truepsi[,i] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
+}
 tx <- rep(1:Tx, M)  # TODO: Allow exposures to be missing at different times
+psi <- t(sapply(tx, function(t) truepsi[t,]))
+psi <- as.matrix(psi)
+if (K == 1 & ncol(psi) != 1) {psi <- t(psi)}
+eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
+eta <- as.matrix(eta)
+if (K == 1 & ncol(eta) != 1) {eta <- t(eta)}
 idx <- rep(1:M, each=Tx)
+etay <- transform_etay(eta, idx, Tx)
 
 # Generate Theta
-# -----------Option 1 -----------
 a1 <- a2 <- gtheta <- 10
 truedelta <- rgamma(1, a1, 1)
 truedelta <- c(truedelta, rgamma(L-1, a2, 1))
 truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
-# ------------Option 2: more sparse Theta----------------
-#truedelta <- c(rgamma(1, 2, 1), rgamma(1, 3, 1), rgamma(L-2, 10, 1))
-#aphi <- bphi <- matrix(3, P, L)
-#for (l in 1:L) {
-#  s <- 1+(l-1)*ceiling(P/L)
-#  e <- min(P, l*ceiling(P/L))
-#  aphi[s:e, l] <- 1
-#  aphi[-(s:e), l] <- 6
-#}
-#truephi <- t(matrix(sapply(1:P, function(i) rgamma(L, aphi[i]/2, bphi[i]/2)), L, P))
 truetau <- get_factor_tau(truedelta)
 Theta <- array(NA, dim = c(P, L))
 for (j in 1:P) {
@@ -46,18 +49,15 @@ for (j in 1:P) {
     Theta[j,l] <- rnorm(1, 0, 1/sqrt(truephi[j,l] * truetau[l]))
   }
 }
-# Generate Psi
-truepsi <- array(NA, dim = c(Tx, K))
-for (i in 1:K) {
-  truepsi[,i] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
-}
+
 # Generate Xi
 truexi <- array(NA, dim = c(Tx, L, K))
 for (k in 1:K) {
   for (l in 1:L) {
-    truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
+    truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU/2)
   }
 }
+
 # Calculate Mu & Sigma
 truemu <- array(NA, dim = c(Tx, P))
 trueSigma <- array(NA, dim = c(Tx, P, P))
@@ -66,56 +66,33 @@ for (t in 1:Tx) {
   truemu[t,] <- Lambda%*%truepsi[t,]
   trueSigma[t,,] <- Lambda%*%t(Lambda) + SIGMA_X0
 }
-#' ### Generate X from the truth
-# Generate eta
-psi <- t(sapply(tx, function(t) truepsi[t,]))
-psi <- as.matrix(psi)
-if (K == 1 & ncol(psi) != 1) {psi <- t(psi)}
-eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
-eta <- as.matrix(eta)
-if (K == 1 & ncol(eta) != 1) {eta <- t(eta)}
-X <- t(sapply(1:nrow(eta), function(i) mvtnorm::rmvnorm(1, mean=Theta%*%truexi[tx[i],,]%*%eta[i,],
-                                                        sigma=SIGMA_X0)))
+# Visualize Mu & Sigma
+#my_plot_gp(mu = truemu, Sigma = trueSigma, Tx = Tx)
 
-##########################################################
+# Generate X
+X <- t(sapply(1:nrow(eta), function(i) 
+  mvtnorm::rmvnorm(1, 
+                   mean=Theta%*%truexi[tx[i],,]%*%eta[i,],
+                   sigma=SIGMA_X0)))
+
 # Generate Y
-##########################################################
-etay <- transform_etay(eta, idx, Tx)
 q <- 3   # number of outcomes
 n <- M
 p <- K*Tx
 # Active number of predictors is :
-p.act <- 3
+p.act <- 2
 # Generate true error covariance Sigma Y
 rho <- 0.6
-sigma.sq <- 2
+sigma.sq <- 0.5
 times <- 1:q
 H <- abs(outer(times, times, "-"))
 Sigma <- sigma.sq * rho^H
 # Generate noise matrix E 
-mu <- rep(0,q)
-E <- MASS::mvrnorm(n, mu, Sigma)
-# Generate true coefficient matrix B_0. #
-# Entries in nonzero rows are drawn from Unif[(-5,-0.5)U(0.5,5)]
-# Option 1: B[i,j] iid from U(-5, 4)
-#B.act <- runif(p.act*q,-5,4)
-# Option 2: B[i,] iid from N(m, Sigma), E[i,] ~ N(0, Sigma)
-#B.act <- MASS::mvrnorm(p.act, seq(3, 2, length.out = q), Sigma)
-B.act <- MBSP::matrix.normal(M = matrix(2, 3, q), 
-                             U = cov(etay[,c(1,3,5)]), 
-                             V = Sigma)
-disjoint <- function(x){
-  if(x <= -0.5) return(x)
-  else return(x+1)
-}
-#B.act <- matrix(sapply(B.act, disjoint),p.act,q)
-# Set rest of the rows equal to 0
-B.true <- rbind(B.act, matrix(0,p-3,q))
-B.true <- B.true[c(1,4,2,5,3,6),]
-#B.true <- B.true[sample(1:p),] # permute the rows
-
-# Generate response matrix Y #
-Y <- crossprod(t(etay),B.true) + E
+E <- MASS::mvrnorm(n, rep(0,q), Sigma)
+B.act <- MASS::mvrnorm(p.act, seq(1, 2, length.out = q), Sigma)  # Correlated B
+B.true <- rbind(B.act,matrix(0,p-p.act,q))
+# Generate Y
+Y <- etay%*%B.true + E
 
 
 ##########################################################
@@ -126,17 +103,17 @@ Y <- crossprod(t(etay),B.true) + E
 data <- list(X=X, tx=tx, idx=idx, K=K, L=L, KAPPA=KAPPA,
              #aphi=aphi, bphi=bphi,
              Y=Y)
-niter <- 30000
-nburn <- 20000
-nthin <- 10
+niter <- 30
+nburn <- 20
+nthin <- 1
 s <- Sys.time()
 samps <- Mufa(niter, data, nburn = nburn, nthin= nthin,
 method="shrink")
-saveRDS(samps, paste("samples/factor1_2c_K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".RDS", sep="_"))
+saveRDS(samps, paste("samples/sim5/K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".RDS", sep="_"))
 save(SIGMA_X0, truemu, trueSigma, eta,
      B.true, Sigma, Theta, truepsi, truexi, X, Y,
      Tx, K, P, L, M,KAPPA, EXP_P, TAU, SIGMA_X0, niter, nburn, nthin, 
-     file=paste("samples/factor1_2c_K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".Rdata", sep="_"))
+     file=paste("samples/sim5/K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".Rdata", sep="_"))
 print(Sys.time()-s)
 
 
