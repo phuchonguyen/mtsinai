@@ -66,7 +66,7 @@ transform_etay <- function(eta, idx, Tx) {
     etay <- t(etay)
   }
   eta_names <- sapply(1:ncol(eta), function(k) paste("eta", k, sep=""))
-  etay_names <- as.vector(t(sapply(1:Tx, function(t) paste(eta_names, t, sep="_"))))
+  etay_names <- paste(rep(eta_names, Tx), rep(1:Tx, each=ncol(eta)), sep="_")
   colnames(etay) <- etay_names
   rownames(etay) <- uidx
   return(etay)
