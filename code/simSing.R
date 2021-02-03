@@ -1,7 +1,7 @@
 #.libPaths(c("/usr/local/lib/R/site-library", .libPaths()))
-source(file.path(getwd(), "code/MyModel/mufa.R"))
-source(file.path(getwd(), "code/sim_func.R"))
-funcpath <- file.path(getwd(), "code/MyModel/functions")
+source(file.path(getwd(), "MyModel/mufa.R"))
+source(file.path(getwd(), "sim_func.R"))
+funcpath <- file.path(getwd(), "MyModel/functions")
 funcfiles <- list.files(path = funcpath)
 sapply(funcfiles, function(x) source(file.path(funcpath, x)))
 
@@ -11,14 +11,14 @@ set.seed(SEED)
 
 # Model parameters
 K <- 2
-Tx <- 3
+Tx <- 1
 Ty <- 3
 P <- 10
 L <- 3
 M <- 100    # Number of subjects
 KAPPA <- 10 # GP bandwidth
 EXP_P <- 2  # GP Gaussian kernel
-TAU <- 2   # GP sqrt variance
+TAU <- 1   # GP sqrt variance
 SIGMA_X0 <- diag(0.5, P, P)#diag(1/rgamma(P, SXA, SXB), P, P)
 
 # Generate X
@@ -31,14 +31,15 @@ tx <- rep(1:Tx, M)  # TODO: Allow exposures to be missing at different times
 psi <- t(sapply(tx, function(t) truepsi[t,]))
 psi <- as.matrix(psi)
 if (K == 1 & ncol(psi) != 1) {psi <- t(psi)}
-eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x)))
+eta <- t(apply(psi, 1, function(x) mvtnorm::rmvnorm(1, mean=x, sigma=diag(0.5, K))))
 eta <- as.matrix(eta)
 if (K == 1 & ncol(eta) != 1) {eta <- t(eta)}
 idx <- rep(1:M, each=Tx)
 etay <- transform_etay(eta, idx, Tx)
 
 # Generate Theta
-a1 <- a2 <- gtheta <- 10
+a1 <- a2 <- 10
+gtheta <- 3
 truedelta <- rgamma(1, a1, 1)
 truedelta <- c(truedelta, rgamma(L-1, a2, 1))
 truephi <- matrix(rgamma(L*P, gtheta/2, gtheta/2), P, L)
@@ -54,7 +55,7 @@ for (j in 1:P) {
 truexi <- array(NA, dim = c(Tx, L, K))
 for (k in 1:K) {
   for (l in 1:L) {
-    truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU/2)
+    truexi[,l,k] <- rgp(1, 1:Tx, mu_zero, KAPPA, TAU)
   }
 }
 
@@ -83,7 +84,7 @@ p <- K*Tx
 p.act <- 2
 # Generate true error covariance Sigma Y
 rho <- 0.6
-sigma.sq <- 0.5
+sigma.sq <- 0.2
 times <- 1:q
 H <- abs(outer(times, times, "-"))
 Sigma <- sigma.sq * rho^H
@@ -103,15 +104,15 @@ Y <- etay%*%B.true + E
 data <- list(X=X, tx=tx, idx=idx, K=K, L=L, KAPPA=KAPPA,
              #aphi=aphi, bphi=bphi,
              Y=Y)
-niter <- 30
-nburn <- 20
-nthin <- 1
+niter <- 15000
+nburn <- 10000
+nthin <- 5
 s <- Sys.time()
 samps <- Mufa(niter, data, nburn = nburn, nthin= nthin,
 method="shrink")
 saveRDS(samps, paste("samples/sim5/K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".RDS", sep="_"))
 save(SIGMA_X0, truemu, trueSigma, eta,
-     B.true, Sigma, Theta, truepsi, truexi, X, Y,
+     B.true, Sigma, Theta, truepsi, truexi, X, Y, gtheta, a1, a2,
      Tx, K, P, L, M,KAPPA, EXP_P, TAU, SIGMA_X0, niter, nburn, nthin, 
      file=paste("samples/sim5/K",K, "Tx", Tx, "Ty",q, Sys.Date(), ".Rdata", sep="_"))
 print(Sys.time()-s)
